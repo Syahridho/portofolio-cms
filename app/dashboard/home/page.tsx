@@ -3,6 +3,15 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SocialIconButton } from "@/components/social-icon-button";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
+import { EditSkillsDialog } from "@/components/edit-skills-dialog";
+import { EditIntroDialog } from "@/components/edit-intro-dialog";
+import { EditCareerDialog } from "@/components/edit-career-dialog";
+import { EditAchievementDialog } from "@/components/edit-achievement-dialog";
+import { EditCVDialog } from "@/components/edit-cv-dialog";
+import { initialSkills } from "@/lib/skills-data";
+import { initialCareer } from "@/lib/career-data";
+import { initialAchievements } from "@/lib/achievement-data";
+import { initialCVs } from "@/lib/cv-data";
 
 import {
   IconTrendingDown,
@@ -13,6 +22,27 @@ import {
   IconBrandGithub,
   IconBrandInstagram,
   IconBrandWhatsapp,
+  IconBrandBootstrap,
+  IconBrandTailwind,
+  IconBrandReact,
+  IconBrandNextjs,
+  IconBrandLaravel,
+  IconBrandMysql,
+  IconFileTypeSql,
+  IconBrandInertia,
+  IconBrandNodejs,
+  IconBrandGolang,
+  IconBrandFlutter,
+  IconBrandTypescript,
+  IconBrandPhp,
+  IconBrandPython,
+  IconBrandFirebase,
+  IconBrandFigma,
+  IconBrandGit,
+  IconBrandBitbucket,
+  IconBrandHtml5,
+  IconBrandCss3,
+  IconBrandJavascript,
 } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -42,8 +72,8 @@ import {
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Home - Dashboard",
-  description: "Dashboard home page",
+  title: "Beranda - Dashboard",
+  description: "Halaman beranda dashboard",
 };
 
 export default function Page() {
@@ -53,7 +83,7 @@ export default function Page() {
       href: "/dashboard",
     },
     {
-      title: "Home",
+      title: "Beranda",
       href: "/dashboard/home",
     },
   ];
@@ -134,70 +164,395 @@ export default function Page() {
                 </Card>
                 <Card className="@container/card">
                   <CardHeader className="flex-row items-start gap-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="@shadcn"
-                      />
-                      <AvatarFallback>SAS</AvatarFallback>
-                    </Avatar>
-
-                    <div className="flex flex-1 flex-col gap-1">
-                      <CardTitle className="text-2xl font-semibold">
-                        Syahridho Arjuna Syahputra
-                      </CardTitle>
-                      <CardDescription>Full Stack Developer</CardDescription>
-                    </div>
+                    <CardTitle className="text-2xl font-semibold">
+                      Hi, I'm Syahridho Arjuna Syahputra
+                    </CardTitle>
+                    <CardDescription>
+                      I am a Programmer with a focus on creating aesthetically
+                      pleasing and responsive user interfaces. With skills
+                      focusing on Bootstrap, Tailwind, PHP, React JS, Next JS
+                      and Laravel. I have developed a variety of projects,
+                      ranging from business websites to interactive web
+                      applications.
+                    </CardDescription>
 
                     <CardAction>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="icon-sm" variant="outline">
-                            <IconEdit />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <form>
-                            <DialogHeader>
-                              <DialogTitle>Edit Profile</DialogTitle>
-                              <DialogDescription>
-                                Make changes to your profile here. Click save
-                                when you&apos;re done.
-                              </DialogDescription>
-                            </DialogHeader>
-
-                            <div className="grid gap-4 py-4">
-                              <div className="grid gap-3">
-                                <Label htmlFor="name-1">Name</Label>
-                                <Input
-                                  id="name-1"
-                                  name="name"
-                                  defaultValue="Syahridho Arjuna Syahputra"
-                                />
-                              </div>
-                              <div className="grid gap-3">
-                                <Label htmlFor="username-1">Job Title</Label>
-                                <Input
-                                  id="username-1"
-                                  name="username"
-                                  defaultValue="Full Stack Developer"
-                                />
-                              </div>
-                            </div>
-
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DialogClose>
-                              <Button type="submit">Save changes</Button>
-                            </DialogFooter>
-                          </form>
-                        </DialogContent>
-                      </Dialog>
+                      <EditIntroDialog
+                        currentName="Syahridho Arjuna Syahputra"
+                        currentDescription="I am a Programmer with a focus on creating aesthetically pleasing and responsive user interfaces. With skills focusing on Bootstrap, Tailwind, PHP, React JS, Next JS and Laravel. I have developed a variety of projects, ranging from business websites to interactive web applications."
+                      />
                     </CardAction>
                   </CardHeader>
+                </Card>
+                <Card className="@container/card">
+                  <CardHeader className="flex-row items-start gap-4">
+                    <CardTitle className="text-2xl font-semibold">
+                      Skill Pemrograman
+                    </CardTitle>
+                    <CardDescription>
+                      <div className="flex flex-col gap-4">
+                        {/* Frontend */}
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">
+                            Frontend
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandHtml5 size={16} />
+                              HTML
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandCss3 size={16} />
+                              CSS
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandJavascript size={16} />
+                              JavaScript
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandTypescript size={16} />
+                              TypeScript
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandReact size={16} />
+                              React JS
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandNextjs size={16} />
+                              Next JS
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandBootstrap size={16} />
+                              Bootstrap
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandTailwind size={16} />
+                              Tailwind CSS
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandInertia size={16} />
+                              Inertia.js
+                            </Badge>
+                          </div>
+                        </div>
 
-                  <CardFooter className="flex-col items-start gap-1.5 text-sm"></CardFooter>
+                        {/* Backend */}
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">
+                            Backend
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandPhp size={16} />
+                              PHP
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandLaravel size={16} />
+                              Laravel
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandNodejs size={16} />
+                              Node.js
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandGolang size={16} />
+                              Golang
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandPython size={16} />
+                              Python
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Mobile */}
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">Mobile</h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandFlutter size={16} />
+                              Flutter
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandFlutter size={16} />
+                              Dart
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Database */}
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">
+                            Database
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandMysql size={16} />
+                              MySQL
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconFileTypeSql size={16} />
+                              PostgreSQL
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandFirebase size={16} />
+                              Firebase
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Tools & Others */}
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">
+                            Tools & Others
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandGit size={16} />
+                              Git
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandGithub size={16} />
+                              GitHub
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandBitbucket size={16} />
+                              Bitbucket
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              <IconBrandFigma size={16} />
+                              Figma
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardDescription>
+
+                    <CardAction>
+                      <EditSkillsDialog skills={initialSkills} />
+                    </CardAction>
+                  </CardHeader>
+                </Card>
+                <Card className="@container/card">
+                  <CardHeader className="flex-row items-start gap-4">
+                    <CardTitle className="text-2xl font-semibold">
+                      Karir
+                    </CardTitle>
+                    <CardDescription>
+                      <div className="flex flex-col gap-6">
+                        {initialCareer.slice(0, 3).map((career) => {
+                          const MONTHS = [
+                            "",
+                            "Januari",
+                            "Februari",
+                            "Maret",
+                            "April",
+                            "Mei",
+                            "Juni",
+                            "Juli",
+                            "Agustus",
+                            "September",
+                            "Oktober",
+                            "November",
+                            "Desember",
+                          ];
+                          const startMonthName = MONTHS[career.startMonth];
+                          const endMonthName = career.endMonth
+                            ? MONTHS[career.endMonth]
+                            : "";
+                          const isCurrent = !career.endYear;
+                          const period = `${startMonthName} ${
+                            career.startYear
+                          } - ${
+                            isCurrent
+                              ? "Sekarang"
+                              : `${endMonthName} ${career.endYear}`
+                          }`;
+                          const initial = career.company
+                            .substring(0, 2)
+                            .toUpperCase();
+
+                          return (
+                            <div
+                              key={career.id}
+                              className="flex items-start gap-4"
+                            >
+                              {career.logo ? (
+                                <img
+                                  src={career.logo}
+                                  alt={career.company}
+                                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <Avatar className="h-12 w-12 flex-shrink-0">
+                                  <AvatarFallback className="bg-primary text-primary-foreground">
+                                    {initial}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-foreground">
+                                  {career.company}
+                                </h4>
+                                <p className="text-sm text-foreground/80">
+                                  {career.position}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {career.location} • {period}
+                                </p>
+                                {career.description && (
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    {career.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardDescription>
+
+                    <CardAction>
+                      <EditCareerDialog careers={initialCareer} />
+                    </CardAction>
+                  </CardHeader>
+                </Card>
+                <Card className="@container/card">
+                  <CardHeader className="flex-row items-start gap-4">
+                    <CardTitle className="text-2xl font-semibold">
+                      Penghargaan
+                    </CardTitle>
+                    <CardDescription>
+                      <div className="flex flex-col gap-4">
+                        {initialAchievements.slice(0, 3).map((achievement) => {
+                          const MONTHS = [
+                            "",
+                            "Januari",
+                            "Februari",
+                            "Maret",
+                            "April",
+                            "Mei",
+                            "Juni",
+                            "Juli",
+                            "Agustus",
+                            "September",
+                            "Oktober",
+                            "November",
+                            "Desember",
+                          ];
+                          const monthName = MONTHS[achievement.month];
+                          const date = `${monthName} ${achievement.year}`;
+
+                          return (
+                            <div
+                              key={achievement.id}
+                              className="flex items-start gap-3"
+                            >
+                              {achievement.logo ? (
+                                <img
+                                  src={achievement.logo}
+                                  alt={achievement.title}
+                                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground flex-shrink-0">
+                                  🏆
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-muted-foreground">
+                                  {date}
+                                </p>
+                                <h4 className="font-semibold text-foreground mt-1">
+                                  {achievement.title}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {achievement.organization}
+                                  {achievement.location &&
+                                    `, ${achievement.location}`}
+                                </p>
+                                {achievement.category && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {achievement.category}
+                                  </p>
+                                )}
+                                {achievement.gallery &&
+                                  achievement.gallery.length > 0 && (
+                                    <div className="flex gap-2 mt-2">
+                                      {achievement.gallery.map((img, idx) => (
+                                        <img
+                                          key={idx}
+                                          src={img}
+                                          alt={`Gallery ${idx + 1}`}
+                                          className="w-20 h-20 object-cover rounded border"
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardDescription>
+
+                    <CardAction>
+                      <EditAchievementDialog
+                        achievements={initialAchievements}
+                      />
+                    </CardAction>
+                  </CardHeader>
+                </Card>
+                <Card className="@container/card">
+                  <CardHeader className="flex-row items-start gap-4">
+                    <CardTitle className="text-2xl font-semibold">
+                      Curriculum Vitae
+                    </CardTitle>
+                    <CardDescription>
+                      <div className="flex flex-col gap-4">
+                        {initialCVs.slice(0, 3).map((cv) => (
+                          <div key={cv.id} className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground flex-shrink-0">
+                              📄
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-foreground">
+                                {cv.language}
+                              </h4>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {cv.fileName}
+                              </p>
+                            </div>
+                            <a
+                              href={cv.fileUrl}
+                              download={cv.fileName}
+                              className="text-primary hover:text-primary/80 transition-colors p-2 rounded-full hover:bg-accent"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                              </svg>
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </CardDescription>
+
+                    <CardAction>
+                      <EditCVDialog cvs={initialCVs} />
+                    </CardAction>
+                  </CardHeader>
                 </Card>
               </div>
             </div>

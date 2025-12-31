@@ -70,36 +70,36 @@ export function EditProfileDialog({
       <DialogContent className="sm:max-w-[500px] max-h-[90vh]">
         <form>
           <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogTitle>Edit Profil</DialogTitle>
             <DialogDescription>
-              Update your profile information and social media links.
+              Perbarui informasi profil dan tautan media sosial Anda.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4 overflow-y-auto max-h-[60vh]">
             {/* Basic Info */}
             <div className="grid gap-3">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Nama Lengkap</Label>
               <Input
                 id="name"
                 name="name"
-                placeholder="Enter your full name"
+                placeholder="Masukkan nama lengkap Anda"
                 defaultValue={currentName}
               />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="job-title">Job Title</Label>
+              <Label htmlFor="job-title">Jabatan</Label>
               <Input
                 id="job-title"
                 name="jobTitle"
-                placeholder="e.g. Full Stack Developer"
+                placeholder="Contoh: Full Stack Developer"
                 defaultValue={currentJobTitle}
               />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="avatar">Avatar Photo</Label>
+              <Label htmlFor="avatar">Foto Profil</Label>
 
               {/* Preview Section */}
               {avatarPreview && (
@@ -129,13 +129,15 @@ export function EditProfileDialog({
                 onChange={handleAvatarChange}
               />
               <p className="text-xs text-muted-foreground">
-                Upload a profile photo (JPG, PNG, or WebP)
+                Unggah foto profil (JPG, PNG, atau WebP)
               </p>
             </div>
 
             {/* Social Media Links */}
             <div className="pt-4 border-t">
-              <h4 className="text-sm font-semibold mb-3">Social Media Links</h4>
+              <h4 className="text-sm font-semibold mb-3">
+                Tautan Media Sosial
+              </h4>
 
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
@@ -143,50 +145,50 @@ export function EditProfileDialog({
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="email@anda.com"
                   defaultValue={currentEmail}
                 />
               </div>
 
               <div className="grid gap-3 mt-3">
-                <Label htmlFor="linkedin">LinkedIn Profile</Label>
+                <Label htmlFor="linkedin">Profil LinkedIn</Label>
                 <Input
                   id="linkedin"
                   name="linkedin"
                   type="url"
-                  placeholder="https://linkedin.com/in/yourprofile"
+                  placeholder="https://linkedin.com/in/profilanda"
                   defaultValue={currentLinkedin}
                 />
               </div>
 
               <div className="grid gap-3 mt-3">
-                <Label htmlFor="github">GitHub Profile</Label>
+                <Label htmlFor="github">Profil GitHub</Label>
                 <Input
                   id="github"
                   name="github"
                   type="url"
-                  placeholder="https://github.com/yourusername"
+                  placeholder="https://github.com/usernameanda"
                   defaultValue={currentGithub}
                 />
               </div>
 
               <div className="grid gap-3 mt-3">
-                <Label htmlFor="instagram">Instagram Profile</Label>
+                <Label htmlFor="instagram">Profil Instagram</Label>
                 <Input
                   id="instagram"
                   name="instagram"
                   type="url"
-                  placeholder="https://instagram.com/yourusername"
+                  placeholder="https://instagram.com/usernameanda"
                   defaultValue={currentInstagram}
                 />
               </div>
 
               <div className="grid gap-3 mt-3">
-                <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                <Label htmlFor="whatsapp">Nomor WhatsApp</Label>
                 <Input
                   id="whatsapp"
                   name="whatsapp"
-                  placeholder="628123456789 (without +)"
+                  placeholder="628123456789 (tanpa +)"
                   defaultValue={currentWhatsapp}
                 />
               </div>
@@ -195,9 +197,9 @@ export function EditProfileDialog({
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">Batal</Button>
             </DialogClose>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit">Simpan Perubahan</Button>
           </DialogFooter>
         </form>
       </DialogContent>
