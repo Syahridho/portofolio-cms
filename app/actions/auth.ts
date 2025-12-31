@@ -4,12 +4,16 @@ import { authenticator } from "otplib";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+authenticator.options = {
+  window: 1, 
+};
+
 export async function loginWithTotp(prevState: any, formData: FormData) {
   const code = formData.get("code") as string;
   const secret = process.env.ADMIN_SECRET;
 
   if (!secret) throw new Error("ADMIN_SECRET belum diset di .env");
-
+  
   const isValid = authenticator.check(code, secret);
 
   if (isValid) {
