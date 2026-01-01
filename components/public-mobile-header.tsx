@@ -20,6 +20,7 @@ import {
   IconBrandLinkedin,
   IconMail,
 } from "@tabler/icons-react";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 export function PublicMobileHeader() {
   const [open, setOpen] = useState(false);
@@ -112,6 +113,13 @@ export function PublicMobileHeader() {
                     </a>
                   </Button>
                 )}
+              </div>
+
+              {/* Theme Toggler */}
+              <div className="flex justify-center mt-6">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border bg-background hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm">
+                  <AnimatedThemeToggler className="w-4 cursor-pointer" />
+                </div>
               </div>
             </div>
           </div>

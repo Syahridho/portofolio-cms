@@ -8,6 +8,7 @@ import { EditIntroDialog } from "@/components/edit-intro-dialog";
 import { EditCareerDialog } from "@/components/edit-career-dialog";
 import { EditAchievementDialog } from "@/components/edit-achievement-dialog";
 import { EditCVDialog } from "@/components/edit-cv-dialog";
+import { TechBadge } from "@/components/tech-badge";
 import { initialSkills } from "@/lib/skills-data";
 import { initialCareer } from "@/lib/career-data";
 import { initialAchievements } from "@/lib/achievement-data";
@@ -22,27 +23,6 @@ import {
   IconBrandGithub,
   IconBrandInstagram,
   IconBrandWhatsapp,
-  IconBrandBootstrap,
-  IconBrandTailwind,
-  IconBrandReact,
-  IconBrandNextjs,
-  IconBrandLaravel,
-  IconBrandMysql,
-  IconFileTypeSql,
-  IconBrandInertia,
-  IconBrandNodejs,
-  IconBrandGolang,
-  IconBrandFlutter,
-  IconBrandTypescript,
-  IconBrandPhp,
-  IconBrandPython,
-  IconBrandFirebase,
-  IconBrandFigma,
-  IconBrandGit,
-  IconBrandBitbucket,
-  IconBrandHtml5,
-  IconBrandCss3,
-  IconBrandJavascript,
 } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -197,42 +177,15 @@ export default function Page() {
                             Frontend
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandHtml5 size={16} />
-                              HTML
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandCss3 size={16} />
-                              CSS
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandJavascript size={16} />
-                              JavaScript
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandTypescript size={16} />
-                              TypeScript
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandReact size={16} />
-                              React JS
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandNextjs size={16} />
-                              Next JS
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandBootstrap size={16} />
-                              Bootstrap
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandTailwind size={16} />
-                              Tailwind CSS
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandInertia size={16} />
-                              Inertia.js
-                            </Badge>
+                            {initialSkills
+                              .filter((skill) => skill.category === "Frontend")
+                              .map((skill) => (
+                                <TechBadge
+                                  key={skill.id}
+                                  name={skill.name}
+                                  slug={skill.slug}
+                                />
+                              ))}
                           </div>
                         </div>
 
@@ -242,26 +195,15 @@ export default function Page() {
                             Backend
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandPhp size={16} />
-                              PHP
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandLaravel size={16} />
-                              Laravel
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandNodejs size={16} />
-                              Node.js
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandGolang size={16} />
-                              Golang
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandPython size={16} />
-                              Python
-                            </Badge>
+                            {initialSkills
+                              .filter((skill) => skill.category === "Backend")
+                              .map((skill) => (
+                                <TechBadge
+                                  key={skill.id}
+                                  name={skill.name}
+                                  slug={skill.slug}
+                                />
+                              ))}
                           </div>
                         </div>
 
@@ -269,14 +211,15 @@ export default function Page() {
                         <div>
                           <h4 className="text-sm font-semibold mb-2">Mobile</h4>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandFlutter size={16} />
-                              Flutter
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandFlutter size={16} />
-                              Dart
-                            </Badge>
+                            {initialSkills
+                              .filter((skill) => skill.category === "Mobile")
+                              .map((skill) => (
+                                <TechBadge
+                                  key={skill.id}
+                                  name={skill.name}
+                                  slug={skill.slug}
+                                />
+                              ))}
                           </div>
                         </div>
 
@@ -286,18 +229,15 @@ export default function Page() {
                             Database
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandMysql size={16} />
-                              MySQL
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconFileTypeSql size={16} />
-                              PostgreSQL
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandFirebase size={16} />
-                              Firebase
-                            </Badge>
+                            {initialSkills
+                              .filter((skill) => skill.category === "Database")
+                              .map((skill) => (
+                                <TechBadge
+                                  key={skill.id}
+                                  name={skill.name}
+                                  slug={skill.slug}
+                                />
+                              ))}
                           </div>
                         </div>
 
@@ -307,22 +247,17 @@ export default function Page() {
                             Tools & Others
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandGit size={16} />
-                              Git
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandGithub size={16} />
-                              GitHub
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandBitbucket size={16} />
-                              Bitbucket
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <IconBrandFigma size={16} />
-                              Figma
-                            </Badge>
+                            {initialSkills
+                              .filter(
+                                (skill) => skill.category === "Tools & Others"
+                              )
+                              .map((skill) => (
+                                <TechBadge
+                                  key={skill.id}
+                                  name={skill.name}
+                                  slug={skill.slug}
+                                />
+                              ))}
                           </div>
                         </div>
                       </div>

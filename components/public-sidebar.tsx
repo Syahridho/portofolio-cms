@@ -14,6 +14,8 @@ import {
 } from "@tabler/icons-react";
 import { initialProfile } from "@/lib/profile-data";
 import { Separator } from "@/components/ui/separator";
+import { FlickeringGrid } from "@/components/ui/flickering-grid";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 export function PublicSidebar() {
   const pathname = usePathname();
@@ -27,11 +29,23 @@ export function PublicSidebar() {
 
   return (
     <aside className="w-72 bg-background border-r hidden md:block shrink-0">
-      <div className="h-[calc(100vh-4rem)] sticky top-8 px-6 py-8 overflow-y-auto flex flex-col gap-8">
+      <div className="h-50vh sticky top-8 px-6 py-8 overflow-y-auto flex flex-col gap-4">
         {/* Profile Section */}
-        <div className="flex flex-col items-center text-center space-y-4">
-          <div className="relative p-1 rounded-full border-2 border-dashed border-muted-foreground/30">
-            <Avatar className="h-24 w-24">
+        <div className="relative flex flex-col items-center text-center space-y-4 border rounded shadow p-4 overflow-hidden">
+          {/* FlickeringGrid background - full width behind avatar */}
+
+          <FlickeringGrid
+            className="z-0 absolute inset-0 size-full"
+            squareSize={4}
+            gridGap={6}
+            color="#6B7280"
+            maxOpacity={0.5}
+            flickerChance={0.1}
+            height={85}
+            width={800}
+          />
+          <div className="relative z-10 rounded-full mt-2">
+            <Avatar className="h-20 w-20">
               <AvatarImage
                 src={initialProfile.avatar}
                 alt={initialProfile.name}
@@ -45,13 +59,18 @@ export function PublicSidebar() {
               </AvatarFallback>
             </Avatar>
           </div>
-          <div>
-            <h2 className="text-lg font-bold leading-tight">
+          <div className="relative z-10">
+            <h2 className="text-sm font-bold leading-tight">
               {initialProfile.name}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
               {initialProfile.role}
             </p>
+          </div>
+          <div className="absolute top-2 right-2 z-20">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full border bg-background backdrop-blur-sm hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm">
+              <AnimatedThemeToggler className="w-4 cursor-pointer" />
+            </div>
           </div>
         </div>
 

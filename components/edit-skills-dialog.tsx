@@ -38,37 +38,12 @@ interface Skill {
   id: string;
   name: string;
   category: string;
-  icon: string;
+  slug: string;
 }
 
 interface EditSkillsDialogProps {
   skills: Skill[];
 }
-
-const AVAILABLE_ICONS = [
-  "IconBrandHtml5",
-  "IconBrandCss3",
-  "IconBrandJavascript",
-  "IconBrandTypescript",
-  "IconBrandReact",
-  "IconBrandNextjs",
-  "IconBrandBootstrap",
-  "IconBrandTailwind",
-  "IconBrandInertia",
-  "IconBrandPhp",
-  "IconBrandLaravel",
-  "IconBrandNodejs",
-  "IconBrandGolang",
-  "IconBrandPython",
-  "IconBrandFlutter",
-  "IconBrandMysql",
-  "IconFileTypeSql",
-  "IconBrandFirebase",
-  "IconBrandGit",
-  "IconBrandGithub",
-  "IconBrandBitbucket",
-  "IconBrandFigma",
-];
 
 export function EditSkillsDialog({
   skills: initialSkills,
@@ -82,7 +57,7 @@ export function EditSkillsDialog({
   const [newSkill, setNewSkill] = useState({
     name: "",
     category: "Frontend",
-    icon: "IconBrandReact",
+    slug: "",
   });
 
   const handleDeleteClick = (skill: Skill) => {
@@ -103,10 +78,10 @@ export function EditSkillsDialog({
       id: Date.now().toString(),
       name: newSkill.name,
       category: newSkill.category,
-      icon: newSkill.icon,
+      slug: newSkill.slug,
     };
     setSkills([...skills, skill]);
-    setNewSkill({ name: "", category: "Frontend", icon: "IconBrandReact" });
+    setNewSkill({ name: "", category: "Frontend", slug: "" });
     setIsAddDialogOpen(false);
   };
 
@@ -228,24 +203,32 @@ export function EditSkillsDialog({
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="skill-icon">Icon (dari Tabler Icons)</Label>
-              <Select
-                value={newSkill.icon}
-                onValueChange={(value) =>
-                  setNewSkill({ ...newSkill, icon: value })
+              <Label htmlFor="skill-slug">
+                Slug Simple Icons
+                <span className="text-xs text-muted-foreground ml-2">
+                  (Cari di{" "}
+                  <a
+                    href="https://simpleicons.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-foreground"
+                  >
+                    simpleicons.org
+                  </a>
+                  )
+                </span>
+              </Label>
+              <Input
+                id="skill-slug"
+                placeholder="Contoh: react, vuedotjs, docker"
+                value={newSkill.slug}
+                onChange={(e) =>
+                  setNewSkill({ ...newSkill, slug: e.target.value })
                 }
-              >
-                <SelectTrigger id="skill-icon">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AVAILABLE_ICONS.map((icon) => (
-                    <SelectItem key={icon} value={icon}>
-                      {icon}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
+              <p className="text-xs text-muted-foreground">
+                Masukkan slug dari Simple Icons. Contoh: react, nextdotjs, html5
+              </p>
             </div>
           </div>
 
@@ -253,7 +236,10 @@ export function EditSkillsDialog({
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Batal
             </Button>
-            <Button onClick={handleAddSkill} disabled={!newSkill.name}>
+            <Button
+              onClick={handleAddSkill}
+              disabled={!newSkill.name || !newSkill.slug}
+            >
               Tambah Skill
             </Button>
           </DialogFooter>
