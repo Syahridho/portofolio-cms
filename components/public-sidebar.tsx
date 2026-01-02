@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,27 @@ import { initialProfile } from "@/lib/profile-data";
 import { Separator } from "@/components/ui/separator";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useLocale } from "@/lib/i18n-simple";
 
 export function PublicSidebar() {
   const pathname = usePathname();
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const { t } = useLocale();
 
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Project", href: "/projects" },
-    { name: "Certificate", href: "/certificates" },
-    { name: "Contact", href: "/contact" },
+    { name: t.common.home, href: "/" },
+    { name: t.common.project, href: "/projects" },
+    { name: t.common.certificate, href: "/certificates" },
+    { name: t.common.contact, href: "/contact" },
   ];
 
   return (
@@ -44,7 +57,13 @@ export function PublicSidebar() {
             height={85}
             width={800}
           />
-          <div className="relative z-10 rounded-full mt-2">
+          <div
+            className="relative z-10 rounded-full mt-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => {
+              setIsImageLoading(true);
+              setIsAvatarModalOpen(true);
+            }}
+          >
             <Avatar className="h-20 w-20">
               <AvatarImage
                 src={initialProfile.avatar}
@@ -59,14 +78,21 @@ export function PublicSidebar() {
               </AvatarFallback>
             </Avatar>
           </div>
-          <div className="relative z-10">
+          <div className="relative z-10 mb-0">
             <h2 className="text-sm font-bold leading-tight">
               {initialProfile.name}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 mb-0">
               {initialProfile.role}
             </p>
           </div>
+          {/* Language Switcher - Top Left */}
+          <div className="absolute top-2 left-2 z-20">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full border bg-background backdrop-blur-sm hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm">
+              <LanguageSwitcher className="w-4 cursor-pointer" />
+            </div>
+          </div>
+          {/* Theme Toggler - Top Right */}
           <div className="absolute top-2 right-2 z-20">
             <div className="flex items-center justify-center w-8 h-8 rounded-full border bg-background backdrop-blur-sm hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm">
               <AnimatedThemeToggler className="w-4 cursor-pointer" />
@@ -102,7 +128,7 @@ export function PublicSidebar() {
         {/* Social Section */}
         <div className="flex flex-col gap-4">
           <p className="text-xs text-center font-medium text-muted-foreground uppercase tracking-wider">
-            Social Media
+            {t.common.socialMedia}
           </p>
           <div className="flex justify-center gap-2">
             <Button
@@ -166,6 +192,26 @@ export function PublicSidebar() {
           </div>
         </div>
       </div>
+
+      {/* Avatar Modal Dialog */}
+      <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
+        <DialogContent className="sm:max-w-[500px] pt-12">
+          <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
+            {isImageLoading && (
+              <Skeleton className="absolute inset-0 w-full h-full" />
+            )}
+            <img
+              src={initialProfile.avatar}
+              alt={initialProfile.name}
+              className={cn(
+                "w-full h-full object-cover transition-opacity duration-300",
+                isImageLoading ? "opacity-0" : "opacity-100"
+              )}
+              onLoad={() => setIsImageLoading(false)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 }
