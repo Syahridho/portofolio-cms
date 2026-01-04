@@ -28,6 +28,21 @@ export const translations = {
       less: "Less",
       more: "More",
     },
+    contact: {
+      title: "Contact",
+      subtitle:
+        "Get in touch with me for collaborations or just a friendly hello.",
+      sendMessage: "Send a Message",
+      name: "Name",
+      namePlaceholder: "Your name",
+      email: "Email",
+      emailPlaceholder: "Your email address",
+      subject: "Subject",
+      subjectPlaceholder: "What is this regarding?",
+      message: "Message",
+      messagePlaceholder: "Type your message here...",
+      sendButton: "Send Message",
+    },
   },
   id: {
     common: {
@@ -51,6 +66,20 @@ export const translations = {
       myContribution: "Kontribusi Saya di GitHub",
       less: "Sedikit",
       more: "Banyak",
+    },
+    contact: {
+      title: "Kontak",
+      subtitle: "Hubungi saya untuk kolaborasi atau sekadar menyapa.",
+      sendMessage: "Kirim Pesan",
+      name: "Nama",
+      namePlaceholder: "Nama Anda",
+      email: "Email",
+      emailPlaceholder: "Alamat email Anda",
+      subject: "Subjek",
+      subjectPlaceholder: "Perihal apa ini?",
+      message: "Pesan",
+      messagePlaceholder: "Ketik pesan Anda di sini...",
+      sendButton: "Kirim Pesan",
     },
   },
 };

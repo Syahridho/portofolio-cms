@@ -63,6 +63,7 @@ export function PublicSidebar() {
               setIsImageLoading(true);
               setIsAvatarModalOpen(true);
             }}
+            suppressHydrationWarning
           >
             <Avatar className="h-20 w-20">
               <AvatarImage

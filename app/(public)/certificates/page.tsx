@@ -4,8 +4,8 @@ import { IconStarFilled } from "@tabler/icons-react";
 import { initialCertificates } from "@/lib/certificate-data";
 
 export const metadata = {
-  title: "Certificates | Syahridho Arjuna Syahputra",
-  description: "My certifications and achievements",
+  title: "Sertifikat | Syahridho Arjuna Syahputra",
+  description: "Sertifikasi dan pencapaian saya",
 };
 
 export default function CertificatesPage() {

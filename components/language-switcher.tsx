@@ -21,6 +21,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <DropdownMenuTrigger asChild>
         <div
           className={`flex items-center justify-center cursor-pointer ${className}`}
+          suppressHydrationWarning
         >
           <IconLanguage className="w-4 h-4" />
         </div>

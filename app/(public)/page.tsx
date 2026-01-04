@@ -1,25 +1,26 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { IconDownload, IconBrandGithub } from "@tabler/icons-react";
 import { initialProfile } from "@/lib/profile-data";
 import { initialSkills } from "@/lib/skills-data";
 import { initialCVs } from "@/lib/cv-data";
 import { useLocale } from "@/lib/i18n-simple";
-import { useState, useEffect } from "react";
+import { TextHighlight } from "@/components/ui/text-highlight";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { RainbowButton } from "@/components/ui/rainbow-button";
+import { Marquee } from "@/components/ui/marquee";
+import { TechBadge } from "@/components/tech-badge";
+import { GithubContribution } from "@/components/github-contribution";
 
 export default function HomePage() {
-  const { t } = useLocale();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Get the primary CV (e.g., English version or first available)
-  const primaryCV =
-    initialCVs.find((cv) => cv.language === "English") || initialCVs[0];
+  const { t, locale } = useLocale();
 
   return (
     <div className="space-y-12">
@@ -27,33 +28,40 @@ export default function HomePage() {
       <section className="flex flex-col gap-6 animate-in fade-in zoom-in duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-              {t.home.greeting} {initialProfile.name}
+            <h1 className="text-2xl font-bold tracking-tight">
+              {t.home.greeting}{" "}
+              <TextHighlight color={locale === "id" ? "#ffd1dc" : "#a7f3d0"}>
+                {initialProfile.name}
+              </TextHighlight>
             </h1>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span>{initialProfile.role}</span>
-              <span>•</span>
-              <span>{initialProfile.location}</span>
-            </div>
           </div>
-          {primaryCV && (
-            <Button
-              asChild
-              className="rounded-full shadow-lg hover:shadow-xl transition-all"
-            >
-              <a
-                href={primaryCV.fileUrl}
-                download={primaryCV.fileName}
-                className="gap-2"
-              >
-                {t.common.downloadCV}
-                <IconDownload size={18} />
-              </a>
-            </Button>
+          {initialCVs.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <RainbowButton size="sm" className="gap-2 rounded-full">
+                  {t.common.downloadCV}
+                  <IconDownload size={16} />
+                </RainbowButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[180px]">
+                {initialCVs.map((cv) => (
+                  <DropdownMenuItem key={cv.id} asChild>
+                    <a
+                      href={cv.fileUrl}
+                      download={cv.fileName}
+                      className="cursor-pointer flex items-center gap-2"
+                    >
+                      <IconDownload size={16} />
+                      <span>CV {cv.language}</span>
+                    </a>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
 
-        <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl">
+        <p className="text-base text-justify text-muted-foreground max-w-3xl">
           {t.home.bio}
         </p>
       </section>
@@ -64,18 +72,56 @@ export default function HomePage() {
           <span className="bg-primary/10 p-1 rounded-md text-primary">💻</span>
           {t.home.skills}
         </h2>
-        <div className="space-y-2">
+        <div className="space-y-4">
           <p className="text-sm text-muted-foreground">{t.home.mySkills}</p>
-          <div className="flex flex-wrap gap-2">
-            {initialSkills.map((skill) => (
-              <Badge
-                key={skill.id}
-                variant="secondary"
-                className="px-3 py-1 text-sm bg-white dark:bg-zinc-900 border shadow-sm hover:scale-105 transition-transform cursor-default"
-              >
-                {skill.name}
-              </Badge>
-            ))}
+
+          {/* Marquee Container with Gradient Fade */}
+          <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
+            {/* First Row - Moving Right */}
+            <Marquee pauseOnHover className="[--duration:25s]">
+              {initialSkills
+                .slice(0, Math.ceil(initialSkills.length / 3))
+                .map((skill) => (
+                  <TechBadge
+                    key={skill.id}
+                    name={skill.name}
+                    slug={skill.slug}
+                  />
+                ))}
+            </Marquee>
+
+            {/* Second Row - Moving Right */}
+            <Marquee pauseOnHover className="[--duration:25s]">
+              {initialSkills
+                .slice(
+                  Math.ceil(initialSkills.length / 3),
+                  Math.ceil((initialSkills.length / 3) * 2)
+                )
+                .map((skill) => (
+                  <TechBadge
+                    key={skill.id}
+                    name={skill.name}
+                    slug={skill.slug}
+                  />
+                ))}
+            </Marquee>
+
+            {/* Third Row - Moving Right */}
+            <Marquee pauseOnHover className="[--duration:25s]">
+              {initialSkills
+                .slice(Math.ceil((initialSkills.length / 3) * 2))
+                .map((skill) => (
+                  <TechBadge
+                    key={skill.id}
+                    name={skill.name}
+                    slug={skill.slug}
+                  />
+                ))}
+            </Marquee>
+
+            {/* Gradient Fade Effects */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background"></div>
           </div>
         </div>
       </section>
@@ -92,52 +138,7 @@ export default function HomePage() {
           <p className="text-sm text-muted-foreground">
             {t.home.myContribution}
           </p>
-          <div className="w-full overflow-x-auto p-4 border rounded-xl bg-card">
-            {/* Simple visual mock of contribution graph */}
-            {mounted ? (
-              <div className="flex gap-1 min-w-[600px]">
-                {Array.from({ length: 53 }).map((_, weekIndex) => (
-                  <div key={weekIndex} className="flex flex-col gap-1">
-                    {Array.from({ length: 7 }).map((_, dayIndex) => {
-                      // Randomize contribution level for visual effect
-                      const level =
-                        Math.random() > 0.7
-                          ? Math.random() > 0.5
-                            ? "bg-green-500"
-                            : "bg-green-300"
-                          : "bg-muted";
-                      return (
-                        <div
-                          key={dayIndex}
-                          className={`w-3 h-3 rounded-sm ${level}`}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex gap-1 min-w-[600px]">
-                {Array.from({ length: 53 }).map((_, weekIndex) => (
-                  <div key={weekIndex} className="flex flex-col gap-1">
-                    {Array.from({ length: 7 }).map((_, dayIndex) => (
-                      <div
-                        key={dayIndex}
-                        className="w-3 h-3 rounded-sm bg-muted animate-pulse"
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="mt-2 text-xs text-muted-foreground flex justify-end gap-2 items-center">
-              <span>{t.home.less}</span>
-              <div className="w-3 h-3 bg-muted rounded-sm"></div>
-              <div className="w-3 h-3 bg-green-300 rounded-sm"></div>
-              <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-              <span>{t.home.more}</span>
-            </div>
-          </div>
+          <GithubContribution />
         </div>
       </section>
     </div>

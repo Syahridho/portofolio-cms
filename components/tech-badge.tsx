@@ -24,7 +24,7 @@ export function TechBadge({
     <Badge
       variant={variant}
       className={cn(
-        "gap-1.5 bg-white dark:bg-zinc-900 text-black dark:text-white border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors",
+        "gap-1.5 py-1 px-2 bg-white dark:bg-zinc-900 text-black dark:text-white border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors",
         className
       )}
     >

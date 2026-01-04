@@ -13,8 +13,8 @@ export default function PublicLayout({
         <div className="flex flex-col md:flex-row w-full max-w-5xl bg-background md:overflow-hidden min-h-screen md:max-h-[85vh]">
           <PublicSidebar />
           <PublicMobileHeader />
-          <main className="flex-1 overflow-y-auto md:h-[85vh]">
-            <div className="p-6 md:p-12 lg:p-16 max-w-4xl mx-auto">
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6 md:p-12 lg:p-14 max-w-4xl mx-auto">
               {children}
             </div>
           </main>

@@ -53,6 +53,7 @@ export function PublicMobileHeader() {
             setIsImageLoading(true);
             setIsAvatarModalOpen(true);
           }}
+          suppressHydrationWarning
         >
           <Avatar className="h-10 w-10">
             <AvatarImage
@@ -77,7 +78,7 @@ export function PublicMobileHeader() {
         </div>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" suppressHydrationWarning>
               <IconMenu2 className="h-6 w-6" />
             </Button>
           </SheetTrigger>

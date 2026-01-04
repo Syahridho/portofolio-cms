@@ -12,8 +12,8 @@ import { IconBrandGithub, IconWorld } from "@tabler/icons-react";
 import { initialProjects } from "@/lib/project-data";
 
 export const metadata = {
-  title: "Projects | Syahridho Arjuna Syahputra",
-  description: "Showcase of my projects",
+  title: "Proyek | Syahridho Arjuna Syahputra",
+  description: "Pameran proyek-proyek saya",
 };
 
 export default function ProjectsPage() {

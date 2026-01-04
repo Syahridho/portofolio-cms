@@ -18,28 +18,4 @@ export const initialCVs: CVItem[] = [
     fileUrl: "/cv/cv-english.pdf",
     fileName: "CV_Syahridho_English.pdf",
   },
-  {
-    id: "3",
-    language: "English",
-    fileUrl: "/cv/cv-english.pdf",
-    fileName: "CV_Syahridho_English.pdf",
-  },
-  {
-    id: "4",
-    language: "English",
-    fileUrl: "/cv/cv-english.pdf",
-    fileName: "CV_Syahridho_English.pdf",
-  },
-  {
-    id: "5",
-    language: "English",
-    fileUrl: "/cv/cv-english.pdf",
-    fileName: "CV_Syahridho_English.pdf",
-  },
-  {
-    id: "6",
-    language: "English",
-    fileUrl: "/cv/cv-english.pdf",
-    fileName: "CV_Syahridho_English.pdf",
-  },
 ];
