@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { IconDownload, IconBrandGithub } from "@tabler/icons-react";
+import { IconDownload, IconBrandGithub, IconCode } from "@tabler/icons-react";
 import { initialProfile } from "@/lib/profile-data";
 import { initialSkills } from "@/lib/skills-data";
 import { initialCVs } from "@/lib/cv-data";
@@ -18,6 +18,10 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 import { Marquee } from "@/components/ui/marquee";
 import { TechBadge } from "@/components/tech-badge";
 import { GithubContribution } from "@/components/github-contribution";
+import AchievementSection from "@/components/achievement-section";
+import { hackathonAchievements } from "@/lib/achievement-hackathon-data";
+import { ClientOnly } from "@/components/ui/client-only";
+import ExperienceSection from "@/components/experience-section";
 
 export default function HomePage() {
   const { t, locale } = useLocale();
@@ -36,28 +40,41 @@ export default function HomePage() {
             </h1>
           </div>
           {initialCVs.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <RainbowButton size="sm" className="gap-2 rounded-full">
+            <ClientOnly
+              fallback={
+                <RainbowButton
+                  size="sm"
+                  className="gap-2 rounded-full"
+                  disabled
+                >
                   {t.common.downloadCV}
                   <IconDownload size={16} />
                 </RainbowButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px]">
-                {initialCVs.map((cv) => (
-                  <DropdownMenuItem key={cv.id} asChild>
-                    <a
-                      href={cv.fileUrl}
-                      download={cv.fileName}
-                      className="cursor-pointer flex items-center gap-2"
-                    >
-                      <IconDownload size={16} />
-                      <span>CV {cv.language}</span>
-                    </a>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              }
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <RainbowButton size="sm" className="gap-2 rounded-full">
+                    {t.common.downloadCV}
+                    <IconDownload size={16} />
+                  </RainbowButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[180px]">
+                  {initialCVs.map((cv) => (
+                    <DropdownMenuItem key={cv.id} asChild>
+                      <a
+                        href={cv.fileUrl}
+                        download={cv.fileName}
+                        className="cursor-pointer flex items-center gap-2"
+                      >
+                        <IconDownload size={16} />
+                        <span>CV {cv.language}</span>
+                      </a>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </ClientOnly>
           )}
         </div>
 
@@ -67,9 +84,11 @@ export default function HomePage() {
       </section>
 
       {/* Skills Section */}
-      <section className="space-y-6 animate-in slide-in-from-bottom-4 duration-700 delay-100">
-        <h2 className="text-2xl font-bold border-b pb-2 flex items-center gap-2">
-          <span className="bg-primary/10 p-1 rounded-md text-primary">💻</span>
+      <section className="space-y-2 animate-in slide-in-from-bottom-4 duration-700 delay-100">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <span className="text-primary">
+            <IconCode size={24} />
+          </span>
           {t.home.skills}
         </h2>
         <div className="space-y-4">
@@ -127,9 +146,9 @@ export default function HomePage() {
       </section>
 
       {/* Contribution Section (Placeholder) */}
-      <section className="space-y-6 animate-in slide-in-from-bottom-4 duration-700 delay-200">
-        <h2 className="text-2xl font-bold border-b pb-2 flex items-center gap-2">
-          <span className="bg-primary/10 p-1 rounded-md text-primary">
+      <section className="space-y-2 animate-in slide-in-from-bottom-4 duration-700 delay-200">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <span className="text-primary">
             <IconBrandGithub size={24} />
           </span>
           {t.home.contribution}
@@ -139,6 +158,37 @@ export default function HomePage() {
             {t.home.myContribution}
           </p>
           <GithubContribution />
+        </div>
+      </section>
+
+      {/* Achievement Section */}
+      <section className="space-y-2 animate-in slide-in-from-bottom-4 duration-700 delay-200">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <span className="text-primary">
+            <IconBrandGithub size={24} />
+          </span>
+          {t.home.contribution}
+        </h2>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            {t.home.myContribution}
+          </p>
+          <AchievementSection achievements={hackathonAchievements} />
+        </div>
+      </section>
+
+      <section className="space-y-2 animate-in slide-in-from-bottom-4 duration-700 delay-200">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <span className="text-primary">
+            <IconBrandGithub size={24} />
+          </span>
+          {t.home.contribution}
+        </h2>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            {t.home.myContribution}
+          </p>
+          <ExperienceSection experiences={hackathonAchievements} />
         </div>
       </section>
     </div>

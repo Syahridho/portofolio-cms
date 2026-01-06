@@ -11,7 +11,6 @@ import {
   IconBrandInstagram,
   IconBrandLinkedin,
   IconMail,
-  IconBrandTelegram,
 } from "@tabler/icons-react";
 import { initialProfile } from "@/lib/profile-data";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLocale } from "@/lib/i18n-simple";
@@ -34,10 +34,22 @@ export function PublicSidebar() {
   const { t } = useLocale();
 
   const navItems = [
-    { name: t.common.home, href: "/" },
-    { name: t.common.project, href: "/projects" },
-    { name: t.common.certificate, href: "/certificates" },
-    { name: t.common.contact, href: "/contact" },
+    { name: t.common.home, href: "/", match: (path: string) => path === "/" },
+    {
+      name: t.common.project,
+      href: "/projects",
+      match: (path: string) => path.startsWith("/projects"),
+    },
+    {
+      name: t.common.certificate,
+      href: "/certificates",
+      match: (path: string) => path.startsWith("/certificates"),
+    },
+    {
+      name: t.common.contact,
+      href: "/contact",
+      match: (path: string) => path === "/contact",
+    },
   ];
 
   return (
@@ -106,7 +118,7 @@ export function PublicSidebar() {
         {/* Navigation Section */}
         <nav className="flex-1 flex flex-col space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.match(pathname);
             return (
               <Link
                 key={item.href}
@@ -197,6 +209,9 @@ export function PublicSidebar() {
       {/* Avatar Modal Dialog */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
         <DialogContent className="sm:max-w-[500px] pt-12">
+          <VisuallyHidden>
+            <DialogTitle>Profile picture</DialogTitle>
+          </VisuallyHidden>
           <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
             {isImageLoading && (
               <Skeleton className="absolute inset-0 w-full h-full" />

@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -170,6 +171,9 @@ export function PublicMobileHeader() {
       {/* Avatar Modal Dialog */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
         <DialogContent className="sm:max-w-[500px] pt-12">
+          <VisuallyHidden>
+            <DialogTitle>Profile picture</DialogTitle>
+          </VisuallyHidden>
           <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
             {isImageLoading && (
               <Skeleton className="absolute inset-0 w-full h-full" />

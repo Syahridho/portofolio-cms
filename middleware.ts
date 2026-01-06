@@ -22,10 +22,25 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Penanganan locale (bahasa)
+  const localeCookie = request.cookies.get("locale");
+  if (!localeCookie) {
+    // Default bahasa Inggris
+    const response = NextResponse.next();
+    response.cookies.set({
+      name: "locale",
+      value: "en",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365, // 1 tahun
+      sameSite: "lax",
+    });
+    return response;
+  }
+
   return NextResponse.next();
 }
 
-// PENTING: Update matcher agar middleware juga "memantau" halaman login
+// Middleware berlaku untuk semua halaman kecuali asset
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

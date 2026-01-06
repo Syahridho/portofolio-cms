@@ -2,7 +2,7 @@ import { GitHubCalendar } from "react-github-calendar";
 
 export function GithubContribution() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+    <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-800">
         GitHub Contributions
       </h3>

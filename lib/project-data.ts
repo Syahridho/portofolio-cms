@@ -34,4 +34,52 @@ export const initialProjects: ProjectItem[] = [
     liveUrl: "https://store.example.com",
     githubUrl: "https://github.com/syahridho/ecommerce",
   },
+  {
+    id: "3",
+    title: "E-Commerce App",
+    description:
+      "Full-stack e-commerce application with payment gateway integration.",
+    image: "https://placehold.co/600x400/png",
+    month: 8,
+    year: 2024,
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    liveUrl: "https://store.example.com",
+    githubUrl: "https://github.com/syahridho/ecommerce",
+  },
+  {
+    id: "4",
+    title: "E-Commerce App",
+    description:
+      "Full-stack e-commerce application with payment gateway integration.",
+    image: "https://placehold.co/600x400/png",
+    month: 8,
+    year: 2024,
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    liveUrl: "https://store.example.com",
+    githubUrl: "https://github.com/syahridho/ecommerce",
+  },
+  {
+    id: "5",
+    title: "E-Commerce App",
+    description:
+      "Full-stack e-commerce application with payment gateway integration.",
+    image: "https://placehold.co/600x400/png",
+    month: 8,
+    year: 2024,
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    liveUrl: "https://store.example.com",
+    githubUrl: "https://github.com/syahridho/ecommerce",
+  },
+  {
+    id: "6",
+    title: "E-Commerce App",
+    description:
+      "Full-stack e-commerce application with payment gateway integration.",
+    image: "https://placehold.co/600x400/png",
+    month: 8,
+    year: 2024,
+    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
+    liveUrl: "https://store.example.com",
+    githubUrl: "https://github.com/syahridho/ecommerce",
+  },
 ];

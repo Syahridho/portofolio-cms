@@ -37,6 +37,7 @@ export function EditCertificateDialog({
     expirationDate: "",
     image: "",
     isFeatured: false,
+    role: "other",
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +59,7 @@ export function EditCertificateDialog({
         expirationDate: "",
         image: "",
         isFeatured: false,
+        role: "other",
       });
     }
   }, [certificate, open]);
@@ -83,6 +85,7 @@ export function EditCertificateDialog({
       expirationDate: formData.expirationDate || undefined,
       image: formData.image,
       isFeatured: formData.isFeatured || false,
+      role: formData.role || "other",
     };
     onSave(newCertificate);
     onOpenChange(false);

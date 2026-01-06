@@ -2,16 +2,27 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { initialCertificates } from "@/lib/certificate-data";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useLocale } from "@/lib/i18n-simple";
+import { initialCertificates, CertificateItem } from "@/lib/certificate-data";
+import { IconArrowLeft } from "@tabler/icons-react";
 
-export default function CertificatesPage() {
+type RoleFilter = "all" | "frontend" | "backend" | "cloud" | "other";
+
+export default function AllCertificatesPage() {
   const { t } = useLocale();
+  const [selectedRole, setSelectedRole] = useState<RoleFilter>("all");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +32,11 @@ export default function CertificatesPage() {
     const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
+
+  const filteredCertificates = initialCertificates.filter((cert) => {
+    if (selectedRole === "all") return true;
+    return cert.role === selectedRole;
+  });
 
   const openModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -32,17 +48,53 @@ export default function CertificatesPage() {
     setSelectedImage(null);
   };
 
-  const featuredCertificates = initialCertificates.filter(
-    (cert) => cert.isFeatured
-  );
+  const roles: { key: RoleFilter; label: string }[] = [
+    { key: "all", label: t.certificates.roleAll },
+    { key: "frontend", label: t.certificates.roleFrontend },
+    { key: "backend", label: t.certificates.roleBackend },
+    { key: "cloud", label: t.certificates.roleCloud },
+    { key: "other", label: t.certificates.roleOther },
+  ];
 
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {t.certificates.title}
-        </h1>
-        <p className="text-muted-foreground">{t.certificates.subtitle}</p>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                <Link href="/certificates">
+                  <IconArrowLeft size={18} />
+                </Link>
+              </Button>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {t.certificates.all}
+              </h1>
+            </div>
+            <p className="text-muted-foreground">{t.certificates.subtitle}</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium whitespace-nowrap">
+              {t.certificates.filterByRole}:
+            </label>
+            <Select
+              value={selectedRole}
+              onValueChange={(value) => setSelectedRole(value as RoleFilter)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={t.certificates.roleAll} />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((role) => (
+                  <SelectItem key={role.key} value={role.key}>
+                    {role.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -58,7 +110,7 @@ export default function CertificatesPage() {
                 </div>
               </Card>
             ))
-          : featuredCertificates.map((cert) => (
+          : filteredCertificates.map((cert) => (
               <div
                 key={cert.id}
                 className="group relative cursor-pointer overflow-hidden rounded-lg"
@@ -76,17 +128,19 @@ export default function CertificatesPage() {
                   <p className="text-sm font-semibold line-clamp-1">
                     {cert.name}
                   </p>
+                  <p className="text-xs">
+                    {new Date(cert.issuedDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
                 </div>
               </div>
             ))}
       </div>
 
-      <div className="flex justify-center">
-        <Button variant="outline" asChild>
-          <Link href="/certificates/all">{t.certificates.showAll}</Link>
-        </Button>
-      </div>
-
+      {/* Modal for certificate preview */}
       <Dialog open={isModalOpen} onOpenChange={closeModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden border-none">
           <VisuallyHidden>
