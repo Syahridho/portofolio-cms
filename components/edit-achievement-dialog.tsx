@@ -42,11 +42,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { IconEdit, IconX, IconPlus, IconTrophy } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconX,
+  IconPlus,
+  IconTrophy,
+  IconTrash,
+} from "@tabler/icons-react";
 import { UserAchivement } from "@/types";
 import {
   useAddAchievement,
   useDeleteAchievement,
+  useUpdateAchievement,
 } from "@/hooks/use-achievement";
 import { userAchievementSchema } from "@/lib/schemas";
 import { uploadAvatar, uploadMultipleGalleries } from "@/services/home.service";
@@ -84,6 +91,8 @@ export function EditAchievementDialog({
   const { mutate: addAchievement, isPending: isAdding } = useAddAchievement();
   const { mutate: deleteAchievement, isPending: isDeleting } =
     useDeleteAchievement();
+  const { mutate: updateAchievement, isPending: isUpdating } =
+    useUpdateAchievement();
 
   const [isMainDialogOpen, setIsMainDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -92,10 +101,16 @@ export function EditAchievementDialog({
     useState<UserAchivement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Edit mode states
+  const [editMode, setEditMode] = useState<"add" | "edit">("add");
+  const [achievementToEdit, setAchievementToEdit] =
+    useState<UserAchivement | null>(null);
+
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
 
   const form = useForm<UserAchievementValues>({
     resolver: zodResolver(userAchievementSchema),
@@ -110,6 +125,36 @@ export function EditAchievementDialog({
       gallery: [],
     },
   });
+
+  const handleEditClick = (achievement: UserAchivement) => {
+    setEditMode("edit");
+    setAchievementToEdit(achievement);
+
+    // Pre-fill form with existing data
+    form.reset({
+      title: achievement.title,
+      organization: achievement.organization,
+      location: achievement.location,
+      month: achievement.month,
+      year: achievement.year,
+      category: achievement.category,
+      logo: achievement.logo || "",
+      gallery: achievement.gallery || [],
+    });
+
+    // Set logo preview if exists
+    if (achievement.logo) {
+      setLogoPreview(achievement.logo);
+    }
+
+    // Set gallery previews if exists
+    if (achievement.gallery && achievement.gallery.length > 0) {
+      setGalleryPreviews(achievement.gallery);
+      setExistingGalleryUrls(achievement.gallery);
+    }
+
+    setIsAddDialogOpen(true);
+  };
 
   const handleDeleteClick = (achievement: UserAchivement) => {
     setAchievementToDelete(achievement);
@@ -159,8 +204,25 @@ export function EditAchievementDialog({
   };
 
   const removeGalleryImage = (index: number) => {
+    const previewToRemove = galleryPreviews[index];
+
+    // Remove from previews
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
-    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+
+    // If it's an existing URL (starts with http), remove from existingGalleryUrls
+    if (previewToRemove.startsWith("http")) {
+      setExistingGalleryUrls((prev) =>
+        prev.filter((url) => url !== previewToRemove),
+      );
+    } else {
+      // If it's a new file (data:image), calculate correct file index
+      const existingUrlsBeforeIndex = galleryPreviews
+        .slice(0, index)
+        .filter((url) => url.startsWith("http")).length;
+
+      const fileIndex = index - existingUrlsBeforeIndex;
+      setGalleryFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+    }
   };
 
   const clearLogoPreview = () => {
@@ -176,51 +238,102 @@ export function EditAchievementDialog({
     try {
       setIsUploading(true);
 
-      // Upload logo to Storage if exists
-      let logoUrl = "";
+      // Upload logo to Storage if new file exists
+      let logoUrl = values.logo || "";
       if (logoFile) {
         toast.info("Mengupload logo...");
         logoUrl = await uploadAvatar(logoFile);
       }
 
-      // Upload gallery images to Storage if exists
+      // Upload gallery images to Storage if new files exist
       let galleryUrls: string[] = [];
+
+      // Start with existing URLs that weren't removed
+      galleryUrls = [...existingGalleryUrls];
+
+      // Upload new files and add their URLs
       if (galleryFiles.length > 0) {
         toast.info(`Mengupload ${galleryFiles.length} gambar galeri...`);
-        galleryUrls = await uploadMultipleGalleries(galleryFiles);
+        const newGalleryUrls = await uploadMultipleGalleries(galleryFiles);
+        galleryUrls = [...galleryUrls, ...newGalleryUrls];
       }
 
+      // Build achievement object without undefined values
       const achievement: UserAchivement = {
-        id: Date.now().toString(),
+        id:
+          editMode === "edit" && achievementToEdit
+            ? achievementToEdit.id
+            : Date.now().toString(),
         title: values.title,
         organization: values.organization,
         location: values.location,
         month: values.month,
         year: values.year,
         category: values.category,
-        logo: logoUrl || undefined,
-        gallery: galleryUrls.length > 0 ? galleryUrls : undefined,
       };
 
-      addAchievement(achievement, {
-        onSuccess: () => {
-          form.reset();
-          setLogoPreview(null);
-          setLogoFile(null);
-          setGalleryPreviews([]);
-          setGalleryFiles([]);
-          setIsAddDialogOpen(false);
-          setIsUploading(false);
-        },
-        onError: () => {
-          setIsUploading(false);
-        },
-      });
+      // Only add optional fields if they have values
+      if (logoUrl) {
+        achievement.logo = logoUrl;
+      }
+      if (galleryUrls.length > 0) {
+        achievement.gallery = galleryUrls;
+      }
+
+      if (editMode === "edit" && achievementToEdit) {
+        // Update existing achievement
+        updateAchievement(
+          {
+            oldAchievement: achievementToEdit,
+            updatedAchievement: achievement,
+          },
+          {
+            onSuccess: () => {
+              resetForm();
+            },
+            onError: () => {
+              setIsUploading(false);
+            },
+          },
+        );
+      } else {
+        // Add new achievement
+        addAchievement(achievement, {
+          onSuccess: () => {
+            resetForm();
+          },
+          onError: () => {
+            setIsUploading(false);
+          },
+        });
+      }
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error("Gagal mengupload gambar");
       setIsUploading(false);
     }
+  };
+
+  const resetForm = () => {
+    form.reset({
+      title: "",
+      organization: "",
+      location: "",
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+      category: "",
+      logo: "",
+      gallery: [],
+    });
+    setLogoPreview(null);
+    setLogoFile(null);
+    setGalleryPreviews([]);
+    setGalleryFiles([]);
+    setExistingGalleryUrls([]);
+    setIsAddDialogOpen(false);
+    setIsUploading(false);
+    setEditMode("add");
+    setAchievementToEdit(null);
   };
 
   const formatDate = (month: number, year: number) => {
@@ -247,7 +360,26 @@ export function EditAchievementDialog({
               </div>
               <Button
                 size="sm"
-                onClick={() => setIsAddDialogOpen(true)}
+                onClick={() => {
+                  setEditMode("add");
+                  setAchievementToEdit(null);
+                  form.reset({
+                    title: "",
+                    organization: "",
+                    location: "",
+                    month: new Date().getMonth() + 1,
+                    year: new Date().getFullYear(),
+                    category: "",
+                    logo: "",
+                    gallery: [],
+                  });
+                  setLogoPreview(null);
+                  setLogoFile(null);
+                  setGalleryPreviews([]);
+                  setGalleryFiles([]);
+                  setExistingGalleryUrls([]);
+                  setIsAddDialogOpen(true);
+                }}
                 className="gap-1 ml-4 mr-8"
               >
                 <IconPlus size={16} />
@@ -297,7 +429,15 @@ export function EditAchievementDialog({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                      className="h-8 w-8 hover:bg-secondary"
+                      onClick={() => handleEditClick(achievement)}
+                    >
+                      <IconEdit size={16} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 hover:bg-destructive/30 hover:text-destructive-foreground/50"
                       onClick={() => handleDeleteClick(achievement)}
                     >
                       <IconX size={16} />
@@ -319,8 +459,13 @@ export function EditAchievementDialog({
             <DialogClose asChild>
               <Button variant="outline">Tutup</Button>
             </DialogClose>
-            <Button type="submit" disabled={isAdding || isDeleting}>
-              {isAdding || isDeleting ? "Menyimpan..." : "Simpan Perubahan"}
+            <Button
+              type="submit"
+              disabled={isAdding || isUpdating || isDeleting}
+            >
+              {isAdding || isUpdating || isDeleting
+                ? "Menyimpan..."
+                : "Simpan Perubahan"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -330,9 +475,13 @@ export function EditAchievementDialog({
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Tambah Penghargaan</DialogTitle>
+            <DialogTitle>
+              {editMode === "edit" ? "Edit Penghargaan" : "Tambah Penghargaan"}
+            </DialogTitle>
             <DialogDescription>
-              Tambahkan penghargaan atau prestasi baru.
+              {editMode === "edit"
+                ? "Perbarui informasi penghargaan atau prestasi Anda."
+                : "Tambahkan penghargaan atau prestasi baru."}
             </DialogDescription>
           </DialogHeader>
 
@@ -561,17 +710,27 @@ export function EditAchievementDialog({
                 <Button
                   variant="outline"
                   type="button"
-                  onClick={() => setIsAddDialogOpen(false)}
-                  disabled={isAdding || isUploading}
+                  onClick={() => {
+                    setIsAddDialogOpen(false);
+                    resetForm();
+                  }}
+                  disabled={isAdding || isUpdating || isUploading}
                 >
                   Batal
                 </Button>
-                <Button type="submit" disabled={isAdding || isUploading}>
+                <Button
+                  type="submit"
+                  disabled={isAdding || isUpdating || isUploading}
+                >
                   {isUploading
                     ? "Mengupload..."
-                    : isAdding
-                      ? "Menambahkan..."
-                      : "Tambah Penghargaan"}
+                    : editMode === "edit"
+                      ? isUpdating
+                        ? "Memperbarui..."
+                        : "Perbarui Penghargaan"
+                      : isAdding
+                        ? "Menambahkan..."
+                        : "Tambah Penghargaan"}
                 </Button>
               </DialogFooter>
             </form>

@@ -3,19 +3,36 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconBrandGithub, IconWorld } from "@tabler/icons-react";
-import type { ProjectItem } from "@/lib/project-data";
+import { IconBrandGithub, IconCalendar } from "@tabler/icons-react";
+import { UserProject } from "@/types";
 
 interface ProjectDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  project: ProjectItem | null;
+  project: UserProject | null;
 }
+
+const MONTHS = [
+  "",
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
 
 export function ProjectDetailDialog({
   open,
@@ -24,92 +41,63 @@ export function ProjectDetailDialog({
 }: ProjectDetailDialogProps) {
   if (!project) return null;
 
-  const months = [
-    "",
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
-  ];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Detail Project</DialogTitle>
+          <DialogTitle className="text-2xl">{project.title}</DialogTitle>
+          <DialogDescription className="flex items-center gap-2 text-sm">
+            <IconCalendar size={16} />
+            {MONTHS[project.month]} {project.year}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 py-4 overflow-y-auto max-h-[60vh]">
+          {/* Project Image */}
           {project.image && (
-            <div className="rounded-lg overflow-hidden border">
+            <div className="w-full h-64 rounded-lg overflow-hidden border bg-muted">
               <img
                 src={project.image}
                 alt={project.title}
-                className="w-full h-auto object-cover max-h-[300px]"
+                className="w-full h-full object-cover"
               />
             </div>
           )}
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-bold">{project.title}</h2>
-              <span className="text-sm text-muted-foreground">
-                {months[project.month]} {project.year}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-              {project.technologies.map((tech, i) => (
-                <Badge key={i} variant="secondary">
-                  {tech}
-                </Badge>
-              ))}
-            </div>
-
-            <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+          {/* Description */}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg">Deskripsi</h3>
+            <p className="text-muted-foreground leading-relaxed">
               {project.description}
             </p>
           </div>
 
-          <div className="flex gap-3 pt-4 border-t">
-            {project.liveUrl && (
-              <Button asChild className="flex-1">
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <IconWorld className="mr-2 h-4 w-4" />
-                  Live Demo
-                </a>
-              </Button>
-            )}
-            {project.githubUrl && (
-              <Button asChild variant="outline" className="flex-1">
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <IconBrandGithub className="mr-2 h-4 w-4" />
-                  Source Code
-                </a>
-              </Button>
-            )}
-            {!project.liveUrl && !project.githubUrl && (
-              <p className="text-sm text-muted-foreground italic w-full text-center">
-                Tidak ada link tersedia.
-              </p>
-            )}
+          {/* Technologies */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg">Teknologi yang Digunakan</h3>
+            <div className="flex flex-wrap gap-2">
+              {project.technologies.map((tech, index) => (
+                <Badge key={index} variant="secondary" className="text-sm">
+                  {tech}
+                </Badge>
+              ))}
+            </div>
           </div>
+
+          {/* GitHub Link */}
+          {project.github_url && (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg">Repository</h3>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => window.open(project.github_url, "_blank")}
+              >
+                <IconBrandGithub className="mr-2 h-4 w-4" />
+                Lihat di GitHub
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

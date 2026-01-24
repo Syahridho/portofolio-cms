@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,14 +22,17 @@ import {
   IconSearch,
   IconPencil,
   IconTrash,
-  IconStarFilled,
+  IconExternalLink,
 } from "@tabler/icons-react";
-import { CertificateItem, initialCertificates } from "@/lib/certificate-data";
+import { UserCertificate } from "@/types";
+import { useCertificates, useDeleteCertificate } from "@/hooks/use-certificate";
 import { EditCertificateDialog } from "@/components/edit-certificate-dialog";
 
 export default function Page() {
-  const [certificates, setCertificates] =
-    useState<CertificateItem[]>(initialCertificates);
+  const { data, isLoading } = useCertificates();
+  const { mutate: deleteCertificate, isPending: isDeleting } =
+    useDeleteCertificate();
+
   const [searchQuery, setSearchQuery] = useState("");
 
   // Dialog states
@@ -40,39 +40,32 @@ export default function Page() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] =
-    useState<CertificateItem | null>(null);
+    useState<UserCertificate | null>(null);
+
+  const certificates = data?.items || [];
 
   // Filter certificates based on search
   const filteredCertificates = certificates.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
-  const handleAddCertificate = (newCert: CertificateItem) => {
-    setCertificates([newCert, ...certificates]);
-  };
-
-  const handleEditCertificate = (updatedCert: CertificateItem) => {
-    setCertificates(
-      certificates.map((c) => (c.id === updatedCert.id ? updatedCert : c))
-    );
-  };
 
   const handleDeleteCertificate = () => {
     if (selectedCertificate) {
-      setCertificates(
-        certificates.filter((c) => c.id !== selectedCertificate.id)
-      );
-      setIsDeleteOpen(false);
-      setSelectedCertificate(null);
+      deleteCertificate(selectedCertificate, {
+        onSuccess: () => {
+          setIsDeleteOpen(false);
+          setSelectedCertificate(null);
+        },
+      });
     }
   };
 
-  const openEdit = (cert: CertificateItem) => {
+  const openEdit = (cert: UserCertificate) => {
     setSelectedCertificate(cert);
     setIsEditOpen(true);
   };
 
-  const openDelete = (cert: CertificateItem) => {
+  const openDelete = (cert: UserCertificate) => {
     setSelectedCertificate(cert);
     setIsDeleteOpen(true);
   };
@@ -88,14 +81,21 @@ export default function Page() {
     },
   ];
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  const months = [
+    "",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mei",
+    "Jun",
+    "Jul",
+    "Agu",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Des",
+  ];
 
   return (
     <SidebarProvider
@@ -140,8 +140,26 @@ export default function Page() {
                   </div>
                 </div>
 
+                {/* Grid with Skeleton Loading */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {filteredCertificates.length > 0 ? (
+                  {isLoading ? (
+                    // Skeleton Loading
+                    <>
+                      {[...Array(8)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex flex-col gap-2 rounded-lg border bg-card overflow-hidden"
+                        >
+                          <Skeleton className="aspect-[4/3] w-full" />
+                          <div className="p-4 pt-2 flex flex-col gap-2">
+                            <Skeleton className="h-5 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  ) : filteredCertificates.length > 0 ? (
                     filteredCertificates.map((cert) => (
                       <div
                         key={cert.id}
@@ -149,17 +167,15 @@ export default function Page() {
                       >
                         {/* Image Container with Hover Effects */}
                         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                          {/* Image */}
-                          <img
-                            src={cert.image}
-                            alt={cert.name}
-                            className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50 group-hover:filter group-hover:grayscale-[0.5]"
-                          />
-
-                          {/* Featured Badge */}
-                          {cert.isFeatured && (
-                            <div className="absolute top-2 right-2 z-10 bg-yellow-400 text-yellow-900 p-1.5 rounded-full shadow-sm">
-                              <IconStarFilled size={14} />
+                          {cert.image ? (
+                            <img
+                              src={cert.image}
+                              alt={cert.name}
+                              className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-muted-foreground text-sm">
+                              No Image
                             </div>
                           )}
 
@@ -194,13 +210,24 @@ export default function Page() {
                           >
                             {cert.name}
                           </h3>
-                          <p className="text-xs text-muted-foreground">
-                            Diterbitkan: {formatDate(cert.issuedDate)}
+                          <p className="text-sm text-muted-foreground">
+                            {cert.issuer}
                           </p>
-                          {cert.expirationDate && (
-                            <p className="text-xs text-muted-foreground">
-                              Berlaku s/d: {formatDate(cert.expirationDate)}
-                            </p>
+                          <p className="text-xs text-muted-foreground">
+                            {months[cert.month]} {cert.year}
+                          </p>
+                          {cert.credential_url && (
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="h-auto p-0 text-xs justify-start"
+                              onClick={() =>
+                                window.open(cert.credential_url, "_blank")
+                              }
+                            >
+                              <IconExternalLink className="mr-1 h-3 w-3" />
+                              Lihat Kredensial
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -221,16 +248,14 @@ export default function Page() {
       <EditCertificateDialog
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
-        onSave={handleAddCertificate}
-        existingCertificates={certificates}
+        mode="add"
       />
 
       <EditCertificateDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
         certificate={selectedCertificate}
-        onSave={handleEditCertificate}
-        existingCertificates={certificates}
+        mode="edit"
       />
 
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
@@ -247,9 +272,10 @@ export default function Page() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteCertificate}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Hapus
+              {isDeleting ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

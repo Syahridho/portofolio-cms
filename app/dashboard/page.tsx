@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardContent } from "@/components/dashboard-content";
 
 export default function Page() {
   const breadcrumbs = [
@@ -23,7 +24,9 @@ export default function Page() {
       <SidebarInset>
         <SiteHeader breadcrumbs={breadcrumbs} />
         <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2"></div>
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <DashboardContent />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

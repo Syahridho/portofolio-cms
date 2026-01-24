@@ -48,7 +48,7 @@ import {
   IconX,
   IconPlus,
   IconBriefcase,
-  IconPencil,
+  IconTrash,
 } from "@tabler/icons-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UserCarrer } from "@/types";
@@ -109,6 +109,7 @@ export function EditCareerDialog({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
 
   const form = useForm<UserCareerValues>({
     resolver: zodResolver(userCareerSchema),
@@ -125,6 +126,41 @@ export function EditCareerDialog({
       gallery: [],
     },
   });
+
+  const handleEditClick = (career: UserCarrer) => {
+    setEditMode("edit");
+    setCareerToEdit(career);
+
+    // Pre-fill form with existing data
+    form.reset({
+      company: career.company,
+      position: career.position,
+      location: career.location,
+      startMonth: career.startMonth,
+      startYear: career.startYear,
+      endMonth: career.endMonth,
+      endYear: career.endYear,
+      description: career.description || "",
+      logo: career.logo || "",
+      gallery: career.gallery || [],
+    });
+
+    // Set current job status
+    setIsCurrentJob(!career.endMonth && !career.endYear);
+
+    // Set logo preview if exists
+    if (career.logo) {
+      setLogoPreview(career.logo);
+    }
+
+    // Set gallery previews if exists
+    if (career.gallery && career.gallery.length > 0) {
+      setGalleryPreviews(career.gallery);
+      setExistingGalleryUrls(career.gallery);
+    }
+
+    setIsAddDialogOpen(true);
+  };
 
   const handleDeleteClick = (career: UserCarrer) => {
     setCareerToDelete(career);
@@ -159,8 +195,10 @@ export function EditCareerDialog({
     const maxFiles = 5 - galleryPreviews.length;
     const filesToProcess = files.slice(0, maxFiles);
 
+    // Add new files to galleryFiles
     setGalleryFiles((prev) => [...prev, ...filesToProcess]);
 
+    // Create preview for new files
     filesToProcess.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -174,8 +212,27 @@ export function EditCareerDialog({
   };
 
   const removeGalleryImage = (index: number) => {
+    const previewToRemove = galleryPreviews[index];
+
+    // Remove from previews
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
-    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+
+    // If it's an existing URL (starts with http), remove from existingGalleryUrls
+    if (previewToRemove.startsWith("http")) {
+      setExistingGalleryUrls((prev) =>
+        prev.filter((url) => url !== previewToRemove),
+      );
+    } else {
+      // If it's a new file (data:image), find and remove from galleryFiles
+      // Count how many existing URLs are before this index
+      const existingUrlsBeforeIndex = galleryPreviews
+        .slice(0, index)
+        .filter((url) => url.startsWith("http")).length;
+
+      // The file index is the preview index minus existing URLs before it
+      const fileIndex = index - existingUrlsBeforeIndex;
+      setGalleryFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+    }
   };
 
   const clearLogoPreview = () => {
@@ -191,22 +248,32 @@ export function EditCareerDialog({
     try {
       setIsUploading(true);
 
-      // Upload logo to Storage if exists
-      let logoUrl = "";
+      // Upload logo to Storage if new file exists
+      let logoUrl = values.logo || "";
       if (logoFile) {
         toast.info("Mengupload logo...");
         logoUrl = await uploadAvatar(logoFile);
       }
 
-      // Upload gallery images to Storage if exists
+      // Upload gallery images to Storage if new files exist
       let galleryUrls: string[] = [];
+
+      // Start with existing URLs that weren't removed
+      galleryUrls = [...existingGalleryUrls];
+
+      // Upload new files and add their URLs
       if (galleryFiles.length > 0) {
         toast.info(`Mengupload ${galleryFiles.length} gambar galeri...`);
-        galleryUrls = await uploadMultipleGalleries(galleryFiles);
+        const newGalleryUrls = await uploadMultipleGalleries(galleryFiles);
+        galleryUrls = [...galleryUrls, ...newGalleryUrls];
       }
 
+      // Build career object without undefined values
       const career: UserCarrer = {
-        id: Date.now().toString(),
+        id:
+          editMode === "edit" && careerToEdit
+            ? careerToEdit.id
+            : Date.now().toString(),
         company: values.company,
         position: values.position,
         location: values.location,
@@ -214,31 +281,71 @@ export function EditCareerDialog({
         startYear: values.startYear,
         endMonth: isCurrentJob ? null : values.endMonth,
         endYear: isCurrentJob ? null : values.endYear,
-        logo: logoUrl || undefined,
-        description: values.description,
-        gallery: galleryUrls.length > 0 ? galleryUrls : undefined,
+        description: values.description || "",
       };
 
-      addCareer(career, {
-        onSuccess: () => {
-          form.reset();
-          setIsCurrentJob(true);
-          setLogoPreview(null);
-          setLogoFile(null);
-          setGalleryPreviews([]);
-          setGalleryFiles([]);
-          setIsAddDialogOpen(false);
-          setIsUploading(false);
-        },
-        onError: () => {
-          setIsUploading(false);
-        },
-      });
+      // Only add optional fields if they have values
+      if (logoUrl) {
+        career.logo = logoUrl;
+      }
+      if (galleryUrls.length > 0) {
+        career.gallery = galleryUrls;
+      }
+
+      if (editMode === "edit" && careerToEdit) {
+        // Update existing career
+        updateCareer(
+          { oldCareer: careerToEdit, updatedCareer: career },
+          {
+            onSuccess: () => {
+              resetForm();
+            },
+            onError: () => {
+              setIsUploading(false);
+            },
+          },
+        );
+      } else {
+        // Add new career
+        addCareer(career, {
+          onSuccess: () => {
+            resetForm();
+          },
+          onError: () => {
+            setIsUploading(false);
+          },
+        });
+      }
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error("Gagal mengupload gambar");
       setIsUploading(false);
     }
+  };
+
+  const resetForm = () => {
+    form.reset({
+      company: "",
+      position: "",
+      location: "",
+      startMonth: 1,
+      startYear: new Date().getFullYear(),
+      endMonth: null,
+      endYear: null,
+      description: "",
+      logo: "",
+      gallery: [],
+    });
+    setIsCurrentJob(true);
+    setLogoPreview(null);
+    setLogoFile(null);
+    setGalleryPreviews([]);
+    setGalleryFiles([]);
+    setExistingGalleryUrls([]);
+    setIsAddDialogOpen(false);
+    setIsUploading(false);
+    setEditMode("add");
+    setCareerToEdit(null);
   };
 
   const formatPeriod = (
@@ -275,7 +382,29 @@ export function EditCareerDialog({
               </div>
               <Button
                 size="sm"
-                onClick={() => setIsAddDialogOpen(true)}
+                onClick={() => {
+                  setEditMode("add");
+                  setCareerToEdit(null);
+                  form.reset({
+                    company: "",
+                    position: "",
+                    location: "",
+                    startMonth: 1,
+                    startYear: new Date().getFullYear(),
+                    endMonth: null,
+                    endYear: null,
+                    description: "",
+                    logo: "",
+                    gallery: [],
+                  });
+                  setLogoPreview(null);
+                  setLogoFile(null);
+                  setGalleryPreviews([]);
+                  setGalleryFiles([]);
+                  setExistingGalleryUrls([]);
+                  setIsCurrentJob(true);
+                  setIsAddDialogOpen(true);
+                }}
                 className="gap-1 ml-4 mr-8"
               >
                 <IconPlus size={16} />
@@ -325,10 +454,18 @@ export function EditCareerDialog({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                      className="h-8 w-8 hover:bg-secondary"
+                      onClick={() => handleEditClick(career)}
+                    >
+                      <IconEdit size={16} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 hover:bg-destructive/30 hover:text-destructive-foreground/50 "
                       onClick={() => handleDeleteClick(career)}
                     >
-                      <IconX size={16} />
+                      <IconTrash size={16} />
                     </Button>
                   </div>
                 </div>
@@ -358,9 +495,15 @@ export function EditCareerDialog({
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Tambah Pengalaman Karir</DialogTitle>
+            <DialogTitle>
+              {editMode === "edit"
+                ? "Edit Pengalaman Karir"
+                : "Tambah Pengalaman Karir"}
+            </DialogTitle>
             <DialogDescription>
-              Tambahkan pengalaman kerja atau pendidikan baru.
+              {editMode === "edit"
+                ? "Perbarui informasi pengalaman kerja atau pendidikan Anda."
+                : "Tambahkan pengalaman kerja atau pendidikan baru."}
             </DialogDescription>
           </DialogHeader>
 
@@ -677,17 +820,27 @@ export function EditCareerDialog({
                 <Button
                   variant="outline"
                   type="button"
-                  onClick={() => setIsAddDialogOpen(false)}
-                  disabled={isAdding || isUploading}
+                  onClick={() => {
+                    setIsAddDialogOpen(false);
+                    resetForm();
+                  }}
+                  disabled={isAdding || isUpdating || isUploading}
                 >
                   Batal
                 </Button>
-                <Button type="submit" disabled={isAdding || isUploading}>
+                <Button
+                  type="submit"
+                  disabled={isAdding || isUpdating || isUploading}
+                >
                   {isUploading
                     ? "Mengupload..."
-                    : isAdding
-                      ? "Menambahkan..."
-                      : "Tambah Karir"}
+                    : editMode === "edit"
+                      ? isUpdating
+                        ? "Memperbarui..."
+                        : "Perbarui Karir"
+                      : isAdding
+                        ? "Menambahkan..."
+                        : "Tambah Karir"}
                 </Button>
               </DialogFooter>
             </form>

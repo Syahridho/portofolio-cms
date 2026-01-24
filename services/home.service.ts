@@ -19,6 +19,17 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
+// Helper function to remove undefined values from objects
+const removeUndefined = <T extends Record<string, any>>(obj: T): T => {
+  const cleaned = { ...obj };
+  Object.keys(cleaned).forEach((key) => {
+    if (cleaned[key] === undefined) {
+      delete cleaned[key];
+    }
+  });
+  return cleaned;
+};
+
 // Service User Profile
 export const getUserProfile = async (): Promise<UserProfile | null> => {
   const docRef = doc(db, "userProfile", "general");
@@ -83,11 +94,12 @@ export const getUserSkills = async (): Promise<{
 
 export const addUserSkill = async (newSkill: UserSkills) => {
   const docRef = doc(db, "userProfile", "skills");
+  const cleanedSkill = removeUndefined(newSkill);
 
   await setDoc(
     docRef,
     {
-      items: arrayUnion(newSkill),
+      items: arrayUnion(cleanedSkill),
     },
     { merge: true },
   );
@@ -117,11 +129,12 @@ export const getUserCarrer = async (): Promise<{
 
 export const addUserCarrer = async (newCarrer: UserCarrer) => {
   const docRef = doc(db, "userProfile", "carrer");
+  const cleanedCarrer = removeUndefined(newCarrer);
 
   await setDoc(
     docRef,
     {
-      items: arrayUnion(newCarrer),
+      items: arrayUnion(cleanedCarrer),
     },
     { merge: true },
   );
@@ -140,6 +153,7 @@ export const updateUserCarrer = async (
   updatedCareer: UserCarrer,
 ) => {
   const docRef = doc(db, "userProfile", "carrer");
+  const cleanedCareer = removeUndefined(updatedCareer);
 
   // Remove old career and add updated one
   await updateDoc(docRef, {
@@ -147,7 +161,7 @@ export const updateUserCarrer = async (
   });
 
   await updateDoc(docRef, {
-    items: arrayUnion(updatedCareer),
+    items: arrayUnion(cleanedCareer),
   });
 };
 
@@ -180,11 +194,12 @@ export const getUserAchivement = async (): Promise<{
 
 export const addUserAchivement = async (newAchivement: UserAchivement) => {
   const docRef = doc(db, "userProfile", "achivement");
+  const cleanedAchivement = removeUndefined(newAchivement);
 
   await setDoc(
     docRef,
     {
-      items: arrayUnion(newAchivement),
+      items: arrayUnion(cleanedAchivement),
     },
     { merge: true },
   );
@@ -205,6 +220,7 @@ export const updateUserAchivement = async (
   updatedAchievement: UserAchivement,
 ) => {
   const docRef = doc(db, "userProfile", "achivement");
+  const cleanedAchievement = removeUndefined(updatedAchievement);
 
   // Remove old achievement and add updated one
   await updateDoc(docRef, {
@@ -212,7 +228,7 @@ export const updateUserAchivement = async (
   });
 
   await updateDoc(docRef, {
-    items: arrayUnion(updatedAchievement),
+    items: arrayUnion(cleanedAchievement),
   });
 };
 
@@ -249,11 +265,12 @@ export const getUserCV = async (): Promise<{
 
 export const addUserCV = async (newCV: UserCV) => {
   const docRef = doc(db, "userProfile", "cv");
+  const cleanedCV = removeUndefined(newCV);
 
   await setDoc(
     docRef,
     {
-      items: arrayUnion(newCV),
+      items: arrayUnion(cleanedCV),
     },
     { merge: true },
   );

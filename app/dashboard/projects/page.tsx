@@ -41,12 +41,15 @@ import {
   IconEye,
   IconSearch,
 } from "@tabler/icons-react";
-import { ProjectItem, initialProjects } from "@/lib/project-data";
+import { UserProject } from "@/types";
+import { useProjects, useDeleteProject } from "@/hooks/use-project";
 import { EditProjectDialog } from "@/components/edit-project-dialog";
 import { ProjectDetailDialog } from "@/components/project-detail-dialog";
 
 export default function Page() {
-  const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
+  const { data, isLoading } = useProjects();
+  const { mutate: deleteProject, isPending: isDeleting } = useDeleteProject();
+
   const [searchQuery, setSearchQuery] = useState("");
 
   // Dialog states
@@ -54,48 +57,43 @@ export default function Page() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(
-    null
+  const [selectedProject, setSelectedProject] = useState<UserProject | null>(
+    null,
   );
+
+  const projects = data?.items || [];
 
   // Filter projects based on search
   const filteredProjects = projects.filter(
     (p) =>
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.technologies.some((t) =>
-        t.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+        t.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
   );
-
-  const handleAddProject = (newProject: ProjectItem) => {
-    setProjects([newProject, ...projects]);
-  };
-
-  const handleEditProject = (updatedProject: ProjectItem) => {
-    setProjects(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-    );
-  };
 
   const handleDeleteProject = () => {
     if (selectedProject) {
-      setProjects(projects.filter((p) => p.id !== selectedProject.id));
-      setIsDeleteOpen(false);
-      setSelectedProject(null);
+      deleteProject(selectedProject, {
+        onSuccess: () => {
+          setIsDeleteOpen(false);
+          setSelectedProject(null);
+        },
+      });
     }
   };
 
-  const openEdit = (project: ProjectItem) => {
+  const openEdit = (project: UserProject) => {
     setSelectedProject(project);
     setIsEditOpen(true);
   };
 
-  const openDetail = (project: ProjectItem) => {
+  const openDetail = (project: UserProject) => {
     setSelectedProject(project);
     setIsDetailOpen(true);
   };
 
-  const openDelete = (project: ProjectItem) => {
+  const openDelete = (project: UserProject) => {
     setSelectedProject(project);
     setIsDeleteOpen(true);
   };
@@ -104,7 +102,7 @@ export default function Page() {
     "",
     "Jan",
     "Feb",
-    "mar",
+    "Mar",
     "Apr",
     "Mei",
     "Jun",
@@ -182,7 +180,13 @@ export default function Page() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredProjects.length > 0 ? (
+                      {isLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="h-24 text-center">
+                            Loading...
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredProjects.length > 0 ? (
                         filteredProjects.map((project) => (
                           <TableRow key={project.id}>
                             <TableCell>
@@ -296,14 +300,14 @@ export default function Page() {
       <EditProjectDialog
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
-        onSave={handleAddProject}
+        mode="add"
       />
 
       <EditProjectDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
         project={selectedProject}
-        onSave={handleEditProject}
+        mode="edit"
       />
 
       <ProjectDetailDialog
@@ -326,9 +330,10 @@ export default function Page() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteProject}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Hapus
+              {isDeleting ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

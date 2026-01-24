@@ -60,3 +60,32 @@ export interface UserCV {
   fileUrl: string;
   fileName: string;
 }
+
+export interface UserProject {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  month: number;
+  year: number;
+  technologies: string[];
+  github_url: string;
+}
+
+export interface UserCertificate {
+  id: string;
+  name: string;
+  issuer: string;
+  month: number;
+  year: number;
+  image?: string;
+  credential_url?: string;
+}
+
+export interface UserContact {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}

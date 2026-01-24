@@ -78,3 +78,36 @@ export const userCVSchema = z.object({
   fileUrl: z.string().optional(),
   fileName: z.string().optional(),
 });
+
+export const userProjectSchema = z.object({
+  title: z.string().min(3, "Judul project minimal 3 karakter"),
+  description: z.string().min(10, "Deskripsi minimal 10 karakter"),
+  image: z.string().optional(),
+  month: z.number().min(1).max(12),
+  year: z
+    .number()
+    .min(1900)
+    .max(new Date().getFullYear() + 10),
+  technologies: z.array(z.string()).min(1, "Minimal 1 teknologi harus dipilih"),
+  github_url: z
+    .string()
+    .url("GitHub URL harus valid")
+    .optional()
+    .or(z.literal("")),
+});
+
+export const userCertificateSchema = z.object({
+  name: z.string().min(3, "Nama sertifikat minimal 3 karakter"),
+  issuer: z.string().min(2, "Penerbit sertifikat minimal 2 karakter"),
+  month: z.number().min(1).max(12),
+  year: z
+    .number()
+    .min(1900)
+    .max(new Date().getFullYear() + 10),
+  image: z.string().optional(),
+  credential_url: z
+    .string()
+    .url("Credential URL harus valid")
+    .optional()
+    .or(z.literal("")),
+});
