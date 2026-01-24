@@ -16,6 +16,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { IconEdit } from "@tabler/icons-react";
+import { userDescriptionSchema } from "@/lib/schemas";
+import z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
+import { useUpdateDescription } from "@/hooks/use-description";
+
+type UserDescriptionValues = z.infer<typeof userDescriptionSchema>;
 
 interface EditIntroDialogProps {
   currentName: string;
@@ -26,85 +41,93 @@ export function EditIntroDialog({
   currentName,
   currentDescription,
 }: EditIntroDialogProps) {
-  const [name, setName] = useState(currentName);
-  const [description, setDescription] = useState(currentDescription);
-  const maxDescriptionLength = 500;
+  const { mutate: updateDescription, isPending: isSaving } =
+    useUpdateDescription();
+  const [open, setOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Handle form submission
-    console.log({ name, description });
+  const form = useForm<UserDescriptionValues>({
+    resolver: zodResolver(userDescriptionSchema),
+    defaultValues: {
+      name: currentName || "",
+      description: currentDescription || "",
+    },
+  });
+
+  const onSubmit = async (values: UserDescriptionValues) => {
+    try {
+      updateDescription(values, {
+        onSuccess: () => {
+          form.reset(values);
+          setOpen(false);
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="icon-sm" variant="outline">
           <IconEdit />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Edit Intro</DialogTitle>
-            <DialogDescription>
-              Perbarui nama dan deskripsi Anda yang akan ditampilkan di halaman
-              utama.
-            </DialogDescription>
-          </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <DialogHeader>
+              <DialogTitle>Edit Intro</DialogTitle>
+              <DialogDescription>
+                Perbarui nama dan deskripsi Anda yang akan ditampilkan di
+                halaman utama.
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-3">
-              <Label htmlFor="intro-name">Nama Lengkap</Label>
-              <Input
-                id="intro-name"
+            <div className="grid gap-4 py-4">
+              <FormField
+                control={form.control}
                 name="name"
-                placeholder="Masukkan nama lengkap Anda"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nama Lengkap</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nama Lengkap" {...field} />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Nama ini akan ditampilkan sebagai "Hi, I'm [Nama Anda]"
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                Nama ini akan ditampilkan sebagai "Hi, I'm [Nama Anda]"
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="intro-description">Deskripsi</Label>
-                <span className="text-xs text-muted-foreground">
-                  {description.length}/{maxDescriptionLength}
-                </span>
-              </div>
-              <Textarea
-                id="intro-description"
+              <FormField
+                control={form.control}
                 name="description"
-                placeholder="Ceritakan tentang diri Anda, keahlian, dan pengalaman..."
-                value={description}
-                onChange={(e) => {
-                  if (e.target.value.length <= maxDescriptionLength) {
-                    setDescription(e.target.value);
-                  }
-                }}
-                rows={6}
-                required
-                className="resize-none"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deskripsi</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Deskripsi" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                Deskripsi singkat tentang Anda sebagai programmer
-              </p>
             </div>
-          </div>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Batal
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" type="button">
+                  Batal
+                </Button>
+              </DialogClose>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? "Menyimpan" : "Simpan Perubahan"}
               </Button>
-            </DialogClose>
-            <Button type="submit">Simpan Perubahan</Button>
-          </DialogFooter>
-        </form>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

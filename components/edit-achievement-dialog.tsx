@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,14 +32,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { IconEdit, IconX, IconPlus, IconTrophy } from "@tabler/icons-react";
-import type { AchievementItem } from "@/lib/achievement-data";
+import { UserAchivement } from "@/types";
+import {
+  useAddAchievement,
+  useDeleteAchievement,
+} from "@/hooks/use-achievement";
+import { userAchievementSchema } from "@/lib/schemas";
+import { uploadAvatar, uploadMultipleGalleries } from "@/services/home.service";
+import { toast } from "sonner";
+
+type UserAchievementValues = z.infer<typeof userAchievementSchema>;
 
 interface EditAchievementDialogProps {
-  achievements: AchievementItem[];
+  achievements: UserAchivement[];
 }
 
 const MONTHS = [
@@ -56,57 +75,65 @@ const MONTHS = [
 
 const YEARS = Array.from(
   { length: 30 },
-  (_, i) => new Date().getFullYear() - i
+  (_, i) => new Date().getFullYear() - i,
 );
 
 export function EditAchievementDialog({
   achievements: initialAchievements,
 }: EditAchievementDialogProps) {
-  const [achievements, setAchievements] =
-    useState<AchievementItem[]>(initialAchievements);
+  const { mutate: addAchievement, isPending: isAdding } = useAddAchievement();
+  const { mutate: deleteAchievement, isPending: isDeleting } =
+    useDeleteAchievement();
+
   const [isMainDialogOpen, setIsMainDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [achievementToDelete, setAchievementToDelete] =
-    useState<AchievementItem | null>(null);
+    useState<UserAchivement | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
 
-  const [newAchievement, setNewAchievement] = useState<
-    Partial<AchievementItem>
-  >({
-    title: "",
-    organization: "",
-    location: "",
-    month: 1,
-    year: new Date().getFullYear(),
-    category: "",
-    gallery: [],
+  const form = useForm<UserAchievementValues>({
+    resolver: zodResolver(userAchievementSchema),
+    defaultValues: {
+      title: "",
+      organization: "",
+      location: "",
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+      category: "",
+      logo: "",
+      gallery: [],
+    },
   });
 
-  const handleDeleteClick = (achievement: AchievementItem) => {
+  const handleDeleteClick = (achievement: UserAchivement) => {
     setAchievementToDelete(achievement);
     setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
     if (achievementToDelete) {
-      setAchievements(
-        achievements.filter((a) => a.id !== achievementToDelete.id)
-      );
-      setAchievementToDelete(null);
+      deleteAchievement(achievementToDelete, {
+        onSuccess: () => {
+          setAchievementToDelete(null);
+          setIsDeleteDialogOpen(false);
+        },
+      });
     }
-    setIsDeleteDialogOpen(false);
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogoPreview(reader.result as string);
-        setNewAchievement({ ...newAchievement, logo: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
@@ -114,70 +141,86 @@ export function EditAchievementDialog({
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const maxFiles = 3 - galleryPreviews.length;
+    const maxFiles = 5 - galleryPreviews.length;
     const filesToProcess = files.slice(0, maxFiles);
+
+    setGalleryFiles((prev) => [...prev, ...filesToProcess]);
 
     filesToProcess.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
         setGalleryPreviews((prev) => [...prev, result]);
-        setNewAchievement((prev) => ({
-          ...prev,
-          gallery: [...(prev.gallery || []), result],
-        }));
       };
       reader.readAsDataURL(file);
     });
 
-    // Reset input value
     e.target.value = "";
   };
 
   const removeGalleryImage = (index: number) => {
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
-    setNewAchievement((prev) => ({
-      ...prev,
-      gallery: (prev.gallery || []).filter((_, i) => i !== index),
-    }));
+    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const clearLogoPreview = () => {
     setLogoPreview(null);
-    setNewAchievement({ ...newAchievement, logo: undefined });
+    setLogoFile(null);
     const fileInput = document.getElementById(
-      "achievement-logo-upload"
+      "logo-upload",
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   };
 
-  const handleAddAchievement = () => {
-    const achievement: AchievementItem = {
-      id: Date.now().toString(),
-      title: newAchievement.title || "",
-      organization: newAchievement.organization || "",
-      location: newAchievement.location || "",
-      month: newAchievement.month || 1,
-      year: newAchievement.year || new Date().getFullYear(),
-      category: newAchievement.category,
-      logo: newAchievement.logo,
-      gallery: newAchievement.gallery || [],
-    };
-    setAchievements([achievement, ...achievements]);
+  const onSubmit = async (values: UserAchievementValues) => {
+    try {
+      setIsUploading(true);
 
-    // Reset form
-    setNewAchievement({
-      title: "",
-      organization: "",
-      location: "",
-      month: 1,
-      year: new Date().getFullYear(),
-      category: "",
-      gallery: [],
-    });
-    setLogoPreview(null);
-    setGalleryPreviews([]);
-    setIsAddDialogOpen(false);
+      // Upload logo to Storage if exists
+      let logoUrl = "";
+      if (logoFile) {
+        toast.info("Mengupload logo...");
+        logoUrl = await uploadAvatar(logoFile);
+      }
+
+      // Upload gallery images to Storage if exists
+      let galleryUrls: string[] = [];
+      if (galleryFiles.length > 0) {
+        toast.info(`Mengupload ${galleryFiles.length} gambar galeri...`);
+        galleryUrls = await uploadMultipleGalleries(galleryFiles);
+      }
+
+      const achievement: UserAchivement = {
+        id: Date.now().toString(),
+        title: values.title,
+        organization: values.organization,
+        location: values.location,
+        month: values.month,
+        year: values.year,
+        category: values.category,
+        logo: logoUrl || undefined,
+        gallery: galleryUrls.length > 0 ? galleryUrls : undefined,
+      };
+
+      addAchievement(achievement, {
+        onSuccess: () => {
+          form.reset();
+          setLogoPreview(null);
+          setLogoFile(null);
+          setGalleryPreviews([]);
+          setGalleryFiles([]);
+          setIsAddDialogOpen(false);
+          setIsUploading(false);
+        },
+        onError: () => {
+          setIsUploading(false);
+        },
+      });
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast.error("Gagal mengupload gambar");
+      setIsUploading(false);
+    }
   };
 
   const formatDate = (month: number, year: number) => {
@@ -199,7 +242,7 @@ export function EditAchievementDialog({
               <div className="mr-auto">
                 <DialogTitle>Edit Penghargaan</DialogTitle>
                 <DialogDescription>
-                  Kelola penghargaan dan prestasi yang Anda raih.
+                  Kelola daftar penghargaan dan prestasi Anda.
                 </DialogDescription>
               </div>
               <Button
@@ -214,7 +257,7 @@ export function EditAchievementDialog({
           </DialogHeader>
 
           <div className="grid gap-3 py-4 overflow-y-auto max-h-[60vh]">
-            {achievements.map((achievement) => (
+            {initialAchievements.map((achievement) => (
               <div
                 key={achievement.id}
                 className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -225,13 +268,11 @@ export function EditAchievementDialog({
                       src={achievement.logo}
                       alt={achievement.title}
                     />
-                    <AvatarFallback>
-                      {achievement.title.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarFallback>🏆</AvatarFallback>
                   </Avatar>
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold flex-shrink-0">
-                    <IconTrophy size={24} />
+                    🏆
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -252,19 +293,6 @@ export function EditAchievementDialog({
                           {achievement.category}
                         </p>
                       )}
-                      {achievement.gallery &&
-                        achievement.gallery.length > 0 && (
-                          <div className="flex gap-2 mt-2">
-                            {achievement.gallery.map((img, idx) => (
-                              <img
-                                key={idx}
-                                src={img}
-                                alt={`Gallery ${idx + 1}`}
-                                className="w-20 h-20 object-cover rounded border"
-                              />
-                            ))}
-                          </div>
-                        )}
                     </div>
                     <Button
                       size="icon"
@@ -278,7 +306,7 @@ export function EditAchievementDialog({
                 </div>
               </div>
             ))}
-            {achievements.length === 0 && (
+            {initialAchievements.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <IconTrophy size={48} className="mx-auto mb-2 opacity-50" />
                 <p>Belum ada penghargaan</p>
@@ -291,7 +319,9 @@ export function EditAchievementDialog({
             <DialogClose asChild>
               <Button variant="outline">Tutup</Button>
             </DialogClose>
-            <Button type="submit">Simpan Perubahan</Button>
+            <Button type="submit" disabled={isAdding || isDeleting}>
+              {isAdding || isDeleting ? "Menyimpan..." : "Simpan Perubahan"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -302,222 +332,250 @@ export function EditAchievementDialog({
           <DialogHeader>
             <DialogTitle>Tambah Penghargaan</DialogTitle>
             <DialogDescription>
-              Tambahkan penghargaan atau prestasi yang Anda raih.
+              Tambahkan penghargaan atau prestasi baru.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4 overflow-y-auto max-h-[60vh]">
-            {/* Logo Upload */}
-            <div className="grid gap-3">
-              <Label htmlFor="achievement-logo-upload">
-                Logo/Icon (Opsional)
-              </Label>
-
-              {logoPreview && (
-                <div className="relative w-24 h-24 mx-auto">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={logoPreview} alt="Logo Preview" />
-                    <AvatarFallback>Logo</AvatarFallback>
-                  </Avatar>
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 rounded-full"
-                    onClick={clearLogoPreview}
-                  >
-                    <IconX size={16} />
-                  </Button>
-                </div>
-              )}
-
-              <Input
-                id="achievement-logo-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleLogoChange}
-                className="cursor-pointer"
-              />
-              <p className="text-xs text-muted-foreground">
-                Upload logo penyelenggara atau icon penghargaan
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="achievement-title">Judul Penghargaan</Label>
-              <Input
-                id="achievement-title"
-                placeholder="Contoh: First Place Winner of DesFast 2024"
-                value={newAchievement.title}
-                onChange={(e) =>
-                  setNewAchievement({
-                    ...newAchievement,
-                    title: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="achievement-organization">Penyelenggara</Label>
-              <Input
-                id="achievement-organization"
-                placeholder="Contoh: Event & Community"
-                value={newAchievement.organization}
-                onChange={(e) =>
-                  setNewAchievement({
-                    ...newAchievement,
-                    organization: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="achievement-location">Lokasi (Opsional)</Label>
-              <Input
-                id="achievement-location"
-                placeholder="Contoh: Indonesia, Riau"
-                value={newAchievement.location}
-                onChange={(e) =>
-                  setNewAchievement({
-                    ...newAchievement,
-                    location: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            {/* Date */}
-            <div className="grid grid-cols-2 gap-3">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid gap-4 py-4 overflow-y-auto max-h-[60vh]"
+            >
+              {/* Logo Upload */}
               <div className="grid gap-3">
-                <Label>Bulan</Label>
-                <Select
-                  value={newAchievement.month?.toString()}
-                  onValueChange={(value) =>
-                    setNewAchievement({
-                      ...newAchievement,
-                      month: parseInt(value),
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MONTHS.map((month) => (
-                      <SelectItem
-                        key={month.value}
-                        value={month.value.toString()}
-                      >
-                        {month.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <FormLabel htmlFor="logo-upload">Logo/Badge</FormLabel>
 
-              <div className="grid gap-3">
-                <Label>Tahun</Label>
-                <Select
-                  value={newAchievement.year?.toString()}
-                  onValueChange={(value) =>
-                    setNewAchievement({
-                      ...newAchievement,
-                      year: parseInt(value),
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {YEARS.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Category */}
-            <div className="grid gap-3">
-              <Label htmlFor="achievement-category">Kategori (Opsional)</Label>
-              <Input
-                id="achievement-category"
-                placeholder="Contoh: Coding competition event"
-                value={newAchievement.category}
-                onChange={(e) =>
-                  setNewAchievement({
-                    ...newAchievement,
-                    category: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            {/* Gallery Upload */}
-            <div className="grid gap-3">
-              <Label>Galeri (Maksimal 3 gambar)</Label>
-
-              <div className="grid grid-cols-3 gap-2">
-                {galleryPreviews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square">
-                    <img
-                      src={preview}
-                      alt={`Gallery ${index + 1}`}
-                      className="w-full h-full object-cover rounded-md border"
-                    />
+                {logoPreview && (
+                  <div className="relative w-24 h-24 mx-auto">
+                    <Avatar className="w-24 h-24">
+                      <AvatarImage src={logoPreview} alt="Logo Preview" />
+                      <AvatarFallback>Logo</AvatarFallback>
+                    </Avatar>
                     <Button
                       type="button"
-                      size="icon"
+                      size="icon-sm"
                       variant="destructive"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                      onClick={() => removeGalleryImage(index)}
+                      className="absolute -top-2 -right-2 rounded-full"
+                      onClick={clearLogoPreview}
                     >
-                      <IconX size={12} />
+                      <IconX size={16} />
                     </Button>
                   </div>
-                ))}
-
-                {/* Add Image Button */}
-                {galleryPreviews.length < 3 && (
-                  <label
-                    htmlFor="achievement-gallery-upload"
-                    className="aspect-square border-2 border-dashed border-muted-foreground/25 rounded-md flex items-center justify-center cursor-pointer hover:border-muted-foreground/50 hover:bg-accent/50 transition-colors"
-                  >
-                    <IconPlus size={24} className="text-muted-foreground" />
-                  </label>
                 )}
+
+                <Input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="cursor-pointer"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Upload logo atau badge penghargaan (JPG, PNG, atau WebP)
+                </p>
               </div>
 
-              <Input
-                id="achievement-gallery-upload"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleGalleryChange}
-                className="hidden"
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Judul Penghargaan</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Contoh: Juara 1 Hackathon"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                {galleryPreviews.length}/3 gambar telah dipilih
-              </p>
-            </div>
-          </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              onClick={handleAddAchievement}
-              disabled={!newAchievement.title || !newAchievement.organization}
-            >
-              Tambah Penghargaan
-            </Button>
-          </DialogFooter>
+              <FormField
+                control={form.control}
+                name="organization"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organisasi Penyelenggara</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Contoh: Google Developer"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lokasi</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Contoh: Jakarta, Indonesia"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategori</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Contoh: Teknologi, Sains, Olahraga"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Date */}
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="month"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bulan</FormLabel>
+                      <Select
+                        onValueChange={(value) =>
+                          field.onChange(parseInt(value))
+                        }
+                        value={field.value?.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {MONTHS.map((month) => (
+                            <SelectItem
+                              key={month.value}
+                              value={month.value.toString()}
+                            >
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tahun</FormLabel>
+                      <Select
+                        onValueChange={(value) =>
+                          field.onChange(parseInt(value))
+                        }
+                        value={field.value?.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {YEARS.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Gallery Upload */}
+              <div className="grid gap-3">
+                <FormLabel>Galeri (Maksimal 5 gambar)</FormLabel>
+
+                <div className="grid grid-cols-5 gap-2">
+                  {galleryPreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-square">
+                      <img
+                        src={preview}
+                        alt={`Gallery ${index + 1}`}
+                        className="w-full h-full object-cover rounded-md border"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                        onClick={() => removeGalleryImage(index)}
+                      >
+                        <IconX size={12} />
+                      </Button>
+                    </div>
+                  ))}
+
+                  {/* Add Image Button */}
+                  {galleryPreviews.length < 5 && (
+                    <label
+                      htmlFor="gallery-upload"
+                      className="aspect-square border-2 border-dashed border-muted-foreground/25 rounded-md flex items-center justify-center cursor-pointer hover:border-muted-foreground/50 hover:bg-accent/50 transition-colors"
+                    >
+                      <IconPlus size={24} className="text-muted-foreground" />
+                    </label>
+                  )}
+                </div>
+
+                <Input
+                  id="gallery-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryChange}
+                  className="hidden"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {galleryPreviews.length}/5 gambar telah dipilih
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsAddDialogOpen(false)}
+                  disabled={isAdding || isUploading}
+                >
+                  Batal
+                </Button>
+                <Button type="submit" disabled={isAdding || isUploading}>
+                  {isUploading
+                    ? "Mengupload..."
+                    : isAdding
+                      ? "Menambahkan..."
+                      : "Tambah Penghargaan"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
@@ -531,8 +589,8 @@ export function EditAchievementDialog({
             <AlertDialogTitle>Hapus Penghargaan?</AlertDialogTitle>
             <AlertDialogDescription>
               Apakah Anda yakin ingin menghapus{" "}
-              <strong>{achievementToDelete?.title}</strong>? Tindakan ini tidak
-              dapat dibatalkan.
+              <strong>{achievementToDelete?.title}</strong> dari daftar
+              penghargaan Anda? Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

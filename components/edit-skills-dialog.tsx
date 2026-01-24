@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,8 +25,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { IconEdit, IconX, IconPlus } from "@tabler/icons-react";
 import {
@@ -33,65 +43,78 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserSkills } from "@/types";
+import { useAddSkill, useDeleteSkill } from "@/hooks/use-skills";
+import { userSkillSchema } from "@/lib/schemas";
 
-interface Skill {
-  id: string;
-  name: string;
-  category: string;
-  slug: string;
-}
+type UserSkillValues = z.infer<typeof userSkillSchema>;
 
 interface EditSkillsDialogProps {
-  skills: Skill[];
+  skills: UserSkills[];
 }
 
 export function EditSkillsDialog({
   skills: initialSkills,
 }: EditSkillsDialogProps) {
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
+  const { mutate: addSkill, isPending: isAdding } = useAddSkill();
+  const { mutate: deleteSkill, isPending: isDeleting } = useDeleteSkill();
+
   const [isMainDialogOpen, setIsMainDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
+  const [skillToDelete, setSkillToDelete] = useState<UserSkills | null>(null);
 
-  const [newSkill, setNewSkill] = useState({
-    name: "",
-    category: "Frontend",
-    slug: "",
+  const form = useForm<UserSkillValues>({
+    resolver: zodResolver(userSkillSchema),
+    defaultValues: {
+      name: "",
+      category: "Frontend",
+      icons: "",
+    },
   });
 
-  const handleDeleteClick = (skill: Skill) => {
+  const handleDeleteClick = (skill: UserSkills) => {
     setSkillToDelete(skill);
     setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
     if (skillToDelete) {
-      setSkills(skills.filter((s) => s.id !== skillToDelete.id));
-      setSkillToDelete(null);
+      deleteSkill(skillToDelete, {
+        onSuccess: () => {
+          setSkillToDelete(null);
+          setIsDeleteDialogOpen(false);
+        },
+      });
     }
-    setIsDeleteDialogOpen(false);
   };
 
-  const handleAddSkill = () => {
-    const skill: Skill = {
+  const onSubmit = (values: UserSkillValues) => {
+    const skill: UserSkills = {
       id: Date.now().toString(),
-      name: newSkill.name,
-      category: newSkill.category,
-      slug: newSkill.slug,
+      name: values.name,
+      category: values.category as UserSkills["category"],
+      icons: values.icons,
     };
-    setSkills([...skills, skill]);
-    setNewSkill({ name: "", category: "Frontend", slug: "" });
-    setIsAddDialogOpen(false);
+
+    addSkill(skill, {
+      onSuccess: () => {
+        form.reset();
+        setIsAddDialogOpen(false);
+      },
+    });
   };
 
-  const groupedSkills = skills.reduce((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
-    }
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
+  const groupedSkills = initialSkills.reduce(
+    (acc, skill) => {
+      if (!acc[skill.category]) {
+        acc[skill.category] = [];
+      }
+      acc[skill.category].push(skill);
+      return acc;
+    },
+    {} as Record<string, UserSkills[]>,
+  );
 
   return (
     <>
@@ -153,7 +176,9 @@ export function EditSkillsDialog({
             <DialogClose asChild>
               <Button variant="outline">Tutup</Button>
             </DialogClose>
-            <Button type="submit">Simpan Perubahan</Button>
+            <Button type="submit" disabled={isAdding || isDeleting}>
+              {isAdding || isDeleting ? "Menyimpan..." : "Simpan Perubahan"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -168,81 +193,105 @@ export function EditSkillsDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-3">
-              <Label htmlFor="skill-name">Nama Teknologi</Label>
-              <Input
-                id="skill-name"
-                placeholder="Contoh: React JS"
-                value={newSkill.name}
-                onChange={(e) =>
-                  setNewSkill({ ...newSkill, name: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="skill-category">Kategori</Label>
-              <Select
-                value={newSkill.category}
-                onValueChange={(value) =>
-                  setNewSkill({ ...newSkill, category: value })
-                }
-              >
-                <SelectTrigger id="skill-category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Frontend">Frontend</SelectItem>
-                  <SelectItem value="Backend">Backend</SelectItem>
-                  <SelectItem value="Mobile">Mobile</SelectItem>
-                  <SelectItem value="Database">Database</SelectItem>
-                  <SelectItem value="Tools & Others">Tools & Others</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="skill-slug">
-                Slug Simple Icons
-                <span className="text-xs text-muted-foreground ml-2">
-                  (Cari di{" "}
-                  <a
-                    href="https://simpleicons.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-foreground"
-                  >
-                    simpleicons.org
-                  </a>
-                  )
-                </span>
-              </Label>
-              <Input
-                id="skill-slug"
-                placeholder="Contoh: react, vuedotjs, docker"
-                value={newSkill.slug}
-                onChange={(e) =>
-                  setNewSkill({ ...newSkill, slug: e.target.value })
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                Masukkan slug dari Simple Icons. Contoh: react, nextdotjs, html5
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              onClick={handleAddSkill}
-              disabled={!newSkill.name || !newSkill.slug}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid gap-4 py-4"
             >
-              Tambah Skill
-            </Button>
-          </DialogFooter>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nama Teknologi</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Contoh: React JS" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategori</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih kategori" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Frontend">Frontend</SelectItem>
+                        <SelectItem value="Backend">Backend</SelectItem>
+                        <SelectItem value="Mobile">Mobile</SelectItem>
+                        <SelectItem value="Database">Database</SelectItem>
+                        <SelectItem value="Tools & Others">
+                          Tools & Others
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="icons"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Slug Simple Icons
+                      <span className="text-xs text-muted-foreground ml-2">
+                        (Cari di{" "}
+                        <a
+                          href="https://simpleicons.org"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-foreground"
+                        >
+                          simpleicons.org
+                        </a>
+                        )
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Contoh: react, vuedotjs, docker"
+                        {...field}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Masukkan slug dari Simple Icons. Contoh: react, nextdotjs,
+                      html5
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsAddDialogOpen(false)}
+                  disabled={isAdding}
+                >
+                  Batal
+                </Button>
+                <Button type="submit" disabled={isAdding}>
+                  {isAdding ? "Menambahkan..." : "Tambah Skill"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
