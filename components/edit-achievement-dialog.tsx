@@ -49,7 +49,8 @@ import {
   IconTrophy,
   IconTrash,
 } from "@tabler/icons-react";
-import { UserAchivement } from "@/types";
+import { UserAchievement, LocalizedContent } from "@/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useAddAchievement,
   useDeleteAchievement,
@@ -62,7 +63,7 @@ import { toast } from "sonner";
 type UserAchievementValues = z.infer<typeof userAchievementSchema>;
 
 interface EditAchievementDialogProps {
-  achievements: UserAchivement[];
+  achievements: UserAchievement[];
 }
 
 const MONTHS = [
@@ -98,13 +99,13 @@ export function EditAchievementDialog({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [achievementToDelete, setAchievementToDelete] =
-    useState<UserAchivement | null>(null);
+    useState<UserAchievement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // Edit mode states
   const [editMode, setEditMode] = useState<"add" | "edit">("add");
   const [achievementToEdit, setAchievementToEdit] =
-    useState<UserAchivement | null>(null);
+    useState<UserAchievement | null>(null);
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -115,29 +116,45 @@ export function EditAchievementDialog({
   const form = useForm<UserAchievementValues>({
     resolver: zodResolver(userAchievementSchema),
     defaultValues: {
-      title: "",
+      title_en: "",
+      title_id: "",
       organization: "",
       location: "",
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
-      category: "",
+      category_en: "",
+      category_id: "",
       logo: "",
       gallery: [],
     },
   });
 
-  const handleEditClick = (achievement: UserAchivement) => {
+  const handleEditClick = (achievement: UserAchievement) => {
     setEditMode("edit");
     setAchievementToEdit(achievement);
 
     // Pre-fill form with existing data
     form.reset({
-      title: achievement.title,
+      title_en:
+        typeof achievement.title === "string"
+          ? achievement.title
+          : achievement.title?.en || "",
+      title_id:
+        typeof achievement.title === "string"
+          ? achievement.title
+          : achievement.title?.id || "",
       organization: achievement.organization,
       location: achievement.location,
       month: achievement.month,
       year: achievement.year,
-      category: achievement.category,
+      category_en:
+        typeof achievement.category === "string"
+          ? achievement.category
+          : achievement.category?.en || "",
+      category_id:
+        typeof achievement.category === "string"
+          ? achievement.category
+          : achievement.category?.id || "",
       logo: achievement.logo || "",
       gallery: achievement.gallery || [],
     });
@@ -156,7 +173,7 @@ export function EditAchievementDialog({
     setIsAddDialogOpen(true);
   };
 
-  const handleDeleteClick = (achievement: UserAchivement) => {
+  const handleDeleteClick = (achievement: UserAchievement) => {
     setAchievementToDelete(achievement);
     setIsDeleteDialogOpen(true);
   };
@@ -259,17 +276,23 @@ export function EditAchievementDialog({
       }
 
       // Build achievement object without undefined values
-      const achievement: UserAchivement = {
+      const achievement: UserAchievement = {
         id:
           editMode === "edit" && achievementToEdit
             ? achievementToEdit.id
             : Date.now().toString(),
-        title: values.title,
+        title: {
+          en: values.title_en,
+          id: values.title_id,
+        },
         organization: values.organization,
         location: values.location,
         month: values.month,
         year: values.year,
-        category: values.category,
+        category: {
+          en: values.category_en,
+          id: values.category_id,
+        },
       };
 
       // Only add optional fields if they have values
@@ -316,12 +339,14 @@ export function EditAchievementDialog({
 
   const resetForm = () => {
     form.reset({
-      title: "",
+      title_en: "",
+      title_id: "",
       organization: "",
       location: "",
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
-      category: "",
+      category_en: "",
+      category_id: "",
       logo: "",
       gallery: [],
     });
@@ -364,12 +389,14 @@ export function EditAchievementDialog({
                   setEditMode("add");
                   setAchievementToEdit(null);
                   form.reset({
-                    title: "",
+                    title_en: "",
+                    title_id: "",
                     organization: "",
                     location: "",
                     month: new Date().getMonth() + 1,
                     year: new Date().getFullYear(),
-                    category: "",
+                    category_en: "",
+                    category_id: "",
                     logo: "",
                     gallery: [],
                   });
@@ -398,7 +425,7 @@ export function EditAchievementDialog({
                   <Avatar className="w-12 h-12">
                     <AvatarImage
                       src={achievement.logo}
-                      alt={achievement.title}
+                      alt={achievement.title.id}
                     />
                     <AvatarFallback>🏆</AvatarFallback>
                   </Avatar>
@@ -414,7 +441,7 @@ export function EditAchievementDialog({
                         {formatDate(achievement.month, achievement.year)}
                       </p>
                       <h4 className="font-semibold mt-1">
-                        {achievement.title}
+                        {achievement.title.id}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {achievement.organization}
@@ -422,7 +449,7 @@ export function EditAchievementDialog({
                       </p>
                       {achievement.category && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          {achievement.category}
+                          {achievement.category.id}
                         </p>
                       )}
                     </div>
@@ -524,22 +551,52 @@ export function EditAchievementDialog({
                 </p>
               </div>
 
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Judul Penghargaan</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Contoh: Juara 1 Hackathon"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Title dengan Tabs Multi-bahasa */}
+              <div className="space-y-2">
+                <FormLabel>Judul Penghargaan</FormLabel>
+                <Tabs defaultValue="id" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
+                    <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="id" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="title_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Contoh: Juara 1 Hackathon"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="title_en"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Example: 1st Place Hackathon"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
 
               <FormField
                 control={form.control}
@@ -575,22 +632,52 @@ export function EditAchievementDialog({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kategori</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Contoh: Teknologi, Sains, Olahraga"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Category dengan Tabs Multi-bahasa */}
+              <div className="space-y-2">
+                <FormLabel>Kategori</FormLabel>
+                <Tabs defaultValue="id" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
+                    <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="id" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="category_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Contoh: Teknologi, Sains, Olahraga"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="category_en"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Example: Technology, Science, Sports"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
 
               {/* Date */}
               <div className="grid grid-cols-2 gap-3">
@@ -748,7 +835,7 @@ export function EditAchievementDialog({
             <AlertDialogTitle>Hapus Penghargaan?</AlertDialogTitle>
             <AlertDialogDescription>
               Apakah Anda yakin ingin menghapus{" "}
-              <strong>{achievementToDelete?.title}</strong> dari daftar
+              <strong>{achievementToDelete?.title.id}</strong> dari daftar
               penghargaan Anda? Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>

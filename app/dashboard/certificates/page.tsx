@@ -27,11 +27,13 @@ import {
 import { UserCertificate } from "@/types";
 import { useCertificates, useDeleteCertificate } from "@/hooks/use-certificate";
 import { EditCertificateDialog } from "@/components/edit-certificate-dialog";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function Page() {
   const { data, isLoading } = useCertificates();
   const { mutate: deleteCertificate, isPending: isDeleting } =
     useDeleteCertificate();
+  const { getContent } = useI18n();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -46,7 +48,7 @@ export default function Page() {
 
   // Filter certificates based on search
   const filteredCertificates = certificates.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    getContent(c.name).toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleDeleteCertificate = () => {
@@ -170,7 +172,7 @@ export default function Page() {
                           {cert.image ? (
                             <img
                               src={cert.image}
-                              alt={cert.name}
+                              alt={cert.name.id}
                               className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
                             />
                           ) : (
@@ -206,9 +208,9 @@ export default function Page() {
                         <div className="p-4 pt-2 flex flex-col gap-1">
                           <h3
                             className="font-semibold leading-tight line-clamp-2"
-                            title={cert.name}
+                            title={getContent(cert.name)}
                           >
-                            {cert.name}
+                            {getContent(cert.name)}
                           </h3>
                           <p className="text-sm text-muted-foreground">
                             {cert.issuer}
@@ -216,13 +218,13 @@ export default function Page() {
                           <p className="text-xs text-muted-foreground">
                             {months[cert.month]} {cert.year}
                           </p>
-                          {cert.credential_url && (
+                          {cert.credentialUrl && (
                             <Button
                               variant="link"
                               size="sm"
                               className="h-auto p-0 text-xs justify-start"
                               onClick={() =>
-                                window.open(cert.credential_url, "_blank")
+                                window.open(cert.credentialUrl, "_blank")
                               }
                             >
                               <IconExternalLink className="mr-1 h-3 w-3" />
@@ -264,8 +266,10 @@ export default function Page() {
             <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
             <AlertDialogDescription>
               Tindakan ini tidak dapat dibatalkan. Sertifikat{" "}
-              <strong>{selectedCertificate?.name}</strong> akan dihapus
-              permanen.
+              <strong>
+                {selectedCertificate && getContent(selectedCertificate.name)}
+              </strong>{" "}
+              akan dihapus permanen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

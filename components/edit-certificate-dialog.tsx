@@ -31,6 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { IconX } from "@tabler/icons-react";
 import { UserCertificate } from "@/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useAddCertificate,
   useUpdateCertificate,
@@ -85,12 +86,13 @@ export function EditCertificateDialog({
   const form = useForm<UserCertificateValues>({
     resolver: zodResolver(userCertificateSchema),
     defaultValues: {
-      name: "",
+      name_en: "",
+      name_id: "",
       issuer: "",
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
       image: "",
-      credential_url: "",
+      credentialUrl: "",
     },
   });
 
@@ -98,12 +100,19 @@ export function EditCertificateDialog({
   useEffect(() => {
     if (mode === "edit" && certificate) {
       form.reset({
-        name: certificate.name,
+        name_en:
+          typeof certificate.name === "string"
+            ? certificate.name
+            : certificate.name?.en || "",
+        name_id:
+          typeof certificate.name === "string"
+            ? certificate.name
+            : certificate.name?.id || "",
         issuer: certificate.issuer,
         month: certificate.month,
         year: certificate.year,
         image: certificate.image || "",
-        credential_url: certificate.credential_url || "",
+        credentialUrl: certificate.credentialUrl || "",
       });
       if (certificate.image) {
         setImagePreview(certificate.image);
@@ -145,13 +154,16 @@ export function EditCertificateDialog({
         imageUrl = await uploadCertificateImage(imageFile);
       }
 
-      // Build certificate object without undefined values
+      // Build certificate object
       const certificateData: UserCertificate = {
         id:
           mode === "edit" && certificate
             ? certificate.id
             : Date.now().toString(),
-        name: values.name,
+        name: {
+          en: values.name_en,
+          id: values.name_id,
+        },
         issuer: values.issuer,
         month: values.month,
         year: values.year,
@@ -161,8 +173,8 @@ export function EditCertificateDialog({
       if (imageUrl) {
         certificateData.image = imageUrl;
       }
-      if (values.credential_url) {
-        certificateData.credential_url = values.credential_url;
+      if (values.credentialUrl) {
+        certificateData.credentialUrl = values.credentialUrl;
       }
 
       if (mode === "edit" && certificate) {
@@ -200,12 +212,13 @@ export function EditCertificateDialog({
 
   const resetForm = () => {
     form.reset({
-      name: "",
+      name_en: "",
+      name_id: "",
       issuer: "",
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
       image: "",
-      credential_url: "",
+      credentialUrl: "",
     });
     setImagePreview(null);
     setImageFile(null);
@@ -266,22 +279,52 @@ export function EditCertificateDialog({
               </p>
             </div>
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Sertifikat</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Contoh: AWS Certified Solutions Architect"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Name dengan Tabs Multi-bahasa */}
+            <div className="space-y-2">
+              <FormLabel>Nama Sertifikat</FormLabel>
+              <Tabs defaultValue="id" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
+                  <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="id" className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="name_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            placeholder="Contoh: Arsitek Solusi Bersertifikat AWS"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+
+                <TabsContent value="en" className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="name_en"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            placeholder="Example: AWS Certified Solutions Architect"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
 
             <FormField
               control={form.control}
@@ -364,7 +407,7 @@ export function EditCertificateDialog({
 
             <FormField
               control={form.control}
-              name="credential_url"
+              name="credentialUrl"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Credential URL (Opsional)</FormLabel>

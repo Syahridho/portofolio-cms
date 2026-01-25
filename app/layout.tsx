@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { cookies } from "next/headers";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -21,15 +24,21 @@ export const metadata: Metadata = {
     "Portofolio pribadi menampilkan proyek, keterampilan, sertifikat, dan informasi kontak.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("locale")?.value || "en";
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${roboto.variable} ${robotoMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

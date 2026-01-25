@@ -51,7 +51,8 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserCarrer } from "@/types";
+import { UserCareer, LocalizedContent } from "@/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useAddCareer,
   useDeleteCareer,
@@ -64,7 +65,7 @@ import { toast } from "sonner";
 type UserCareerValues = z.infer<typeof userCareerSchema>;
 
 interface EditCareerDialogProps {
-  careers: UserCarrer[];
+  careers: UserCareer[];
 }
 
 const MONTHS = [
@@ -97,13 +98,13 @@ export function EditCareerDialog({
   const [isMainDialogOpen, setIsMainDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [careerToDelete, setCareerToDelete] = useState<UserCarrer | null>(null);
+  const [careerToDelete, setCareerToDelete] = useState<UserCareer | null>(null);
   const [isCurrentJob, setIsCurrentJob] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
   // Edit mode states
   const [editMode, setEditMode] = useState<"add" | "edit">("add");
-  const [careerToEdit, setCareerToEdit] = useState<UserCarrer | null>(null);
+  const [careerToEdit, setCareerToEdit] = useState<UserCareer | null>(null);
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -115,32 +116,48 @@ export function EditCareerDialog({
     resolver: zodResolver(userCareerSchema),
     defaultValues: {
       company: "",
-      position: "",
+      position_en: "",
+      position_id: "",
       location: "",
       startMonth: 1,
       startYear: new Date().getFullYear(),
       endMonth: null,
       endYear: null,
-      description: "",
+      description_en: "",
+      description_id: "",
       logo: "",
       gallery: [],
     },
   });
 
-  const handleEditClick = (career: UserCarrer) => {
+  const handleEditClick = (career: UserCareer) => {
     setEditMode("edit");
     setCareerToEdit(career);
 
     // Pre-fill form with existing data
     form.reset({
       company: career.company,
-      position: career.position,
+      position_en:
+        typeof career.position === "string"
+          ? career.position
+          : career.position?.en || "",
+      position_id:
+        typeof career.position === "string"
+          ? career.position
+          : career.position?.id || "",
       location: career.location,
       startMonth: career.startMonth,
       startYear: career.startYear,
       endMonth: career.endMonth,
       endYear: career.endYear,
-      description: career.description || "",
+      description_en:
+        typeof career.description === "string"
+          ? career.description
+          : career.description?.en || "",
+      description_id:
+        typeof career.description === "string"
+          ? career.description
+          : career.description?.id || "",
       logo: career.logo || "",
       gallery: career.gallery || [],
     });
@@ -162,7 +179,7 @@ export function EditCareerDialog({
     setIsAddDialogOpen(true);
   };
 
-  const handleDeleteClick = (career: UserCarrer) => {
+  const handleDeleteClick = (career: UserCareer) => {
     setCareerToDelete(career);
     setIsDeleteDialogOpen(true);
   };
@@ -269,20 +286,30 @@ export function EditCareerDialog({
       }
 
       // Build career object without undefined values
-      const career: UserCarrer = {
+      const career: UserCareer = {
         id:
           editMode === "edit" && careerToEdit
             ? careerToEdit.id
             : Date.now().toString(),
         company: values.company,
-        position: values.position,
+        position: {
+          en: values.position_en,
+          id: values.position_id,
+        },
         location: values.location,
         startMonth: values.startMonth,
         startYear: values.startYear,
         endMonth: isCurrentJob ? null : values.endMonth,
         endYear: isCurrentJob ? null : values.endYear,
-        description: values.description || "",
       };
+
+      // Add description only if at least one language has content
+      if (values.description_en || values.description_id) {
+        career.description = {
+          en: values.description_en || "",
+          id: values.description_id || "",
+        };
+      }
 
       // Only add optional fields if they have values
       if (logoUrl) {
@@ -326,13 +353,15 @@ export function EditCareerDialog({
   const resetForm = () => {
     form.reset({
       company: "",
-      position: "",
+      position_en: "",
+      position_id: "",
       location: "",
       startMonth: 1,
       startYear: new Date().getFullYear(),
       endMonth: null,
       endYear: null,
-      description: "",
+      description_en: "",
+      description_id: "",
       logo: "",
       gallery: [],
     });
@@ -387,13 +416,15 @@ export function EditCareerDialog({
                   setCareerToEdit(null);
                   form.reset({
                     company: "",
-                    position: "",
+                    position_en: "",
+                    position_id: "",
                     location: "",
                     startMonth: 1,
                     startYear: new Date().getFullYear(),
                     endMonth: null,
                     endYear: null,
-                    description: "",
+                    description_en: "",
+                    description_id: "",
                     logo: "",
                     gallery: [],
                   });
@@ -434,7 +465,7 @@ export function EditCareerDialog({
                     <div className="flex-1">
                       <h4 className="font-semibold">{career.company}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {career.position}
+                        {career.position.id}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {career.location} •{" "}
@@ -447,7 +478,7 @@ export function EditCareerDialog({
                       </p>
                       {career.description && (
                         <p className="text-xs text-muted-foreground mt-2">
-                          {career.description}
+                          {career.description.id}
                         </p>
                       )}
                     </div>
@@ -563,22 +594,52 @@ export function EditCareerDialog({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Posisi/Jabatan</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Contoh: Software Engineer"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Position dengan Tabs Multi-bahasa */}
+              <div className="space-y-2">
+                <FormLabel>Posisi/Jabatan</FormLabel>
+                <Tabs defaultValue="id" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
+                    <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="id" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="position_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Contoh: Software Engineer"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="position_en"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Example: Software Engineer"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
 
               <FormField
                 control={form.control}
@@ -748,25 +809,56 @@ export function EditCareerDialog({
                 </FormLabel>
               </div>
 
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Deskripsi</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Ceritakan tentang pekerjaan atau pengalaman Anda di sini..."
-                        {...field}
-                        rows={4}
-                        className="resize-none"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Description dengan Tabs Multi-bahasa */}
+              <div className="space-y-2">
+                <FormLabel>Deskripsi (Opsional)</FormLabel>
+                <Tabs defaultValue="id" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
+                    <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="id" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="description_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Ceritakan tentang pekerjaan atau pengalaman Anda di sini..."
+                              {...field}
+                              rows={4}
+                              className="resize-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="description_en"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Tell about your work or experience here..."
+                              {...field}
+                              rows={4}
+                              className="resize-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
 
               {/* Gallery Upload */}
               <div className="grid gap-3">

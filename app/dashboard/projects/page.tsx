@@ -45,10 +45,12 @@ import { UserProject } from "@/types";
 import { useProjects, useDeleteProject } from "@/hooks/use-project";
 import { EditProjectDialog } from "@/components/edit-project-dialog";
 import { ProjectDetailDialog } from "@/components/project-detail-dialog";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function Page() {
   const { data, isLoading } = useProjects();
   const { mutate: deleteProject, isPending: isDeleting } = useDeleteProject();
+  const { getContent } = useI18n();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -66,7 +68,10 @@ export default function Page() {
   // Filter projects based on search
   const filteredProjects = projects.filter(
     (p) =>
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getContent(p.title).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getContent(p.description)
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       p.technologies.some((t) =>
         t.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
@@ -194,7 +199,7 @@ export default function Page() {
                                 {project.image ? (
                                   <img
                                     src={project.image}
-                                    alt={project.title}
+                                    alt={getContent(project.title)}
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
@@ -207,10 +212,10 @@ export default function Page() {
                             <TableCell>
                               <div className="flex flex-col">
                                 <span className="font-semibold">
-                                  {project.title}
+                                  {getContent(project.title)}
                                 </span>
                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                                  {project.description}
+                                  {getContent(project.description)}
                                 </span>
                               </div>
                             </TableCell>
@@ -322,8 +327,10 @@ export default function Page() {
             <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
             <AlertDialogDescription>
               Tindakan ini tidak dapat dibatalkan. Project{" "}
-              <strong>{selectedProject?.title}</strong> akan dihapus permanen
-              dari portofolio Anda.
+              <strong>
+                {selectedProject && getContent(selectedProject.title)}
+              </strong>{" "}
+              akan dihapus permanen dari portofolio Anda.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

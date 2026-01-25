@@ -4,8 +4,8 @@ import {
   UserSkills,
   UserDescription,
   UserProfile,
-  UserCarrer,
-  UserAchivement,
+  UserCareer,
+  UserAchievement,
   UserCV,
 } from "@/types/index";
 import {
@@ -115,7 +115,7 @@ export const deleteUserSkill = async (skillToDelete: UserSkills) => {
 
 // Service Carrer
 export const getUserCarrer = async (): Promise<{
-  items: UserCarrer[];
+  items: UserCareer[];
 } | null> => {
   const docRef = doc(db, "userProfile", "carrer");
   const docSnap = await getDoc(docRef);
@@ -127,7 +127,7 @@ export const getUserCarrer = async (): Promise<{
   }
 };
 
-export const addUserCarrer = async (newCarrer: UserCarrer) => {
+export const addUserCarrer = async (newCarrer: UserCareer) => {
   const docRef = doc(db, "userProfile", "carrer");
   const cleanedCarrer = removeUndefined(newCarrer);
 
@@ -140,7 +140,7 @@ export const addUserCarrer = async (newCarrer: UserCarrer) => {
   );
 };
 
-export const deleteUserCarrer = async (carrerToDelete: UserCarrer) => {
+export const deleteUserCarrer = async (carrerToDelete: UserCareer) => {
   const docRef = doc(db, "userProfile", "carrer");
 
   await updateDoc(docRef, {
@@ -149,8 +149,8 @@ export const deleteUserCarrer = async (carrerToDelete: UserCarrer) => {
 };
 
 export const updateUserCarrer = async (
-  oldCareer: UserCarrer,
-  updatedCareer: UserCarrer,
+  oldCareer: UserCareer,
+  updatedCareer: UserCareer,
 ) => {
   const docRef = doc(db, "userProfile", "carrer");
   const cleanedCareer = removeUndefined(updatedCareer);
@@ -180,7 +180,7 @@ export const uploadMultipleGalleries = async (
 
 // Service Achievement
 export const getUserAchivement = async (): Promise<{
-  items: UserAchivement[];
+  items: UserAchievement[];
 } | null> => {
   const docRef = doc(db, "userProfile", "achivement");
   const docSnap = await getDoc(docRef);
@@ -192,7 +192,7 @@ export const getUserAchivement = async (): Promise<{
   }
 };
 
-export const addUserAchivement = async (newAchivement: UserAchivement) => {
+export const addUserAchivement = async (newAchivement: UserAchievement) => {
   const docRef = doc(db, "userProfile", "achivement");
   const cleanedAchivement = removeUndefined(newAchivement);
 
@@ -206,7 +206,7 @@ export const addUserAchivement = async (newAchivement: UserAchivement) => {
 };
 
 export const deleteUserAchivement = async (
-  achivementToDelete: UserAchivement,
+  achivementToDelete: UserAchievement,
 ) => {
   const docRef = doc(db, "userProfile", "achivement");
 
@@ -216,8 +216,8 @@ export const deleteUserAchivement = async (
 };
 
 export const updateUserAchivement = async (
-  oldAchievement: UserAchivement,
-  updatedAchievement: UserAchivement,
+  oldAchievement: UserAchievement,
+  updatedAchievement: UserAchievement,
 ) => {
   const docRef = doc(db, "userProfile", "achivement");
   const cleanedAchievement = removeUndefined(updatedAchievement);

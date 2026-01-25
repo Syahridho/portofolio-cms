@@ -1,6 +1,8 @@
 "use client";
 
-import { useLocale, Locale } from "@/lib/i18n-simple";
+import { useTransition } from "react";
+import { useLocale } from "next-intl";
+import { locales, localeNames, Locale } from "@/i18n/config";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +13,16 @@ import { IconLanguage } from "@tabler/icons-react";
 import { ClientOnly } from "@/components/ui/client-only";
 
 export function LanguageSwitcher({ className }: { className?: string }) {
-  const { locale, setLocale } = useLocale();
+  const [isPending, startTransition] = useTransition();
+  const locale = useLocale() as Locale;
 
   const changeLanguage = (newLocale: Locale) => {
-    setLocale(newLocale);
+    startTransition(() => {
+      // Set cookie untuk locale
+      document.cookie = `locale=${newLocale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+      // Reload page untuk apply locale baru
+      window.location.reload();
+    });
   };
 
   return (

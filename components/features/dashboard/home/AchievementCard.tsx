@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAchievements } from "@/hooks/use-achievement";
-import { UserAchivement } from "@/types";
+import { UserAchievement } from "@/types";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function AchievementCard() {
   const { data: apiData, isLoading } = useAchievements();
+  const { getContent } = useI18n();
 
   if (isLoading) {
     return (
@@ -39,7 +41,7 @@ export default function AchievementCard() {
     );
   }
 
-  const achievements: UserAchivement[] = apiData?.items || [];
+  const achievements: UserAchievement[] = apiData?.items || [];
 
   return (
     <Card className="@container/card">
@@ -71,7 +73,7 @@ export default function AchievementCard() {
                   {achievement.logo ? (
                     <img
                       src={achievement.logo}
-                      alt={achievement.title}
+                      alt={getContent(achievement.title)}
                       className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
@@ -82,7 +84,7 @@ export default function AchievementCard() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground">{date}</p>
                     <h4 className="font-semibold text-foreground mt-1">
-                      {achievement.title}
+                      {getContent(achievement.title)}
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       {achievement.organization}
@@ -90,7 +92,7 @@ export default function AchievementCard() {
                     </p>
                     {achievement.category && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {achievement.category}
+                        {getContent(achievement.category)}
                       </p>
                     )}
                     {achievement.gallery && achievement.gallery.length > 0 && (

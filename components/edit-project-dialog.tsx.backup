@@ -30,8 +30,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { IconX, IconPlus } from "@tabler/icons-react";
-import { UserProject } from "@/types";
+import { UserProject, LocalizedContent } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAddProject, useUpdateProject } from "@/hooks/use-project";
 import { userProjectSchema } from "@/lib/schemas";
@@ -102,22 +103,10 @@ export function EditProjectDialog({
   useEffect(() => {
     if (mode === "edit" && project) {
       form.reset({
-        title_en:
-          typeof project.title === "string"
-            ? project.title
-            : project.title?.en || "",
-        title_id:
-          typeof project.title === "string"
-            ? project.title
-            : project.title?.id || "",
-        description_en:
-          typeof project.description === "string"
-            ? project.description
-            : project.description?.en || "",
-        description_id:
-          typeof project.description === "string"
-            ? project.description
-            : project.description?.id || "",
+        title_en: typeof project.title === 'string' ? project.title : project.title?.en || "",
+        title_id: typeof project.title === 'string' ? project.title : project.title?.id || "",
+        description_en: typeof project.description === 'string' ? project.description : project.description?.en || "",
+        description_id: typeof project.description === 'string' ? project.description : project.description?.id || "",
         image: project.image || "",
         month: project.month,
         year: project.year,
@@ -180,7 +169,7 @@ export function EditProjectDialog({
         imageUrl = await uploadProjectImage(imageFile);
       }
 
-      // Build project object
+      // Build project object without undefined values
       const projectData: UserProject = {
         id: mode === "edit" && project ? project.id : Date.now().toString(),
         title: {
@@ -304,103 +293,41 @@ export function EditProjectDialog({
               </p>
             </div>
 
-            {/* Title dengan Tabs Multi-bahasa */}
-            <div className="space-y-2">
-              <FormLabel>Judul Project</FormLabel>
-              <Tabs defaultValue="id" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
-                  <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
-                </TabsList>
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Judul Project</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Contoh: E-Commerce Website"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                <TabsContent value="id" className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="title_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            placeholder="Contoh: Website E-Commerce"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-
-                <TabsContent value="en" className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="title_en"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            placeholder="Example: E-Commerce Website"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            {/* Description dengan Tabs Multi-bahasa */}
-            <div className="space-y-2">
-              <FormLabel>Deskripsi</FormLabel>
-              <Tabs defaultValue="id" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
-                  <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="id" className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="description_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Ceritakan tentang project Anda..."
-                            {...field}
-                            rows={4}
-                            className="resize-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-
-                <TabsContent value="en" className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="description_en"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Tell about your project..."
-                            {...field}
-                            rows={4}
-                            className="resize-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deskripsi</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Ceritakan tentang project Anda..."
+                      {...field}
+                      rows={4}
+                      className="resize-none"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Technologies */}
             <div className="grid gap-3">
@@ -444,18 +371,6 @@ export function EditProjectDialog({
                 <p className="text-sm font-medium text-destructive">
                   {form.formState.errors.technologies.message}
                 </p>
-              )}
-            </div>
-
-            <FormField
-              control={form.control}
-              name="githubUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>GitHub URL (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://github.com/username/repo"
                       {...field}
                     />
                   </FormControl>

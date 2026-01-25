@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCarrers } from "@/hooks/use-carrer";
-import { UserCarrer } from "@/types";
+import { UserCareer } from "@/types";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function CarrerCard() {
   const { data: apiData, isLoading } = useCarrers();
+  const { getContent } = useI18n();
 
   if (isLoading) {
     return (
@@ -40,7 +42,7 @@ export default function CarrerCard() {
     );
   }
 
-  const carrers: UserCarrer[] = apiData?.items || [];
+  const carrers: UserCareer[] = apiData?.items || [];
 
   return (
     <Card className="@container/card">
@@ -94,14 +96,14 @@ export default function CarrerCard() {
                       {career.company}
                     </h4>
                     <p className="text-sm text-foreground/80">
-                      {career.position}
+                      {getContent(career.position)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {career.location} • {period}
                     </p>
                     {career.description && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        {career.description}
+                        {getContent(career.description)}
                       </p>
                     )}
                   </div>

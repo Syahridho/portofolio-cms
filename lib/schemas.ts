@@ -15,7 +15,10 @@ export const userProfileSchema = z.object({
 
 export const userDescriptionSchema = z.object({
   name: z.string().min(3, "Nama minimal 3 karakter"),
-  description: z.string().min(10, "Deskripsi minimal 10 karakter"),
+  description_en: z
+    .string()
+    .min(10, "Description must be at least 10 characters"),
+  description_id: z.string().min(10, "Deskripsi minimal 10 karakter"),
 });
 
 export const userSkillSchema = z.object({
@@ -41,7 +44,8 @@ export const userSkillSchema = z.object({
 
 export const userCareerSchema = z.object({
   company: z.string().min(2, "Nama perusahaan minimal 2 karakter"),
-  position: z.string().min(2, "Posisi minimal 2 karakter"),
+  position_en: z.string().min(2, "Position must be at least 2 characters"),
+  position_id: z.string().min(2, "Posisi minimal 2 karakter"),
   location: z.string().min(2, "Lokasi minimal 2 karakter"),
   startMonth: z.number().min(1).max(12),
   startYear: z
@@ -54,13 +58,15 @@ export const userCareerSchema = z.object({
     .min(1900)
     .max(new Date().getFullYear() + 10)
     .nullable(),
-  description: z.string().optional(),
+  description_en: z.string().optional(),
+  description_id: z.string().optional(),
   logo: z.string().optional(),
   gallery: z.array(z.string()).optional(),
 });
 
 export const userAchievementSchema = z.object({
-  title: z.string().min(2, "Judul penghargaan minimal 2 karakter"),
+  title_en: z.string().min(2, "Title must be at least 2 characters"),
+  title_id: z.string().min(2, "Judul penghargaan minimal 2 karakter"),
   organization: z.string().min(2, "Nama organisasi minimal 2 karakter"),
   location: z.string().min(2, "Lokasi minimal 2 karakter"),
   month: z.number().min(1).max(12),
@@ -68,7 +74,8 @@ export const userAchievementSchema = z.object({
     .number()
     .min(1900)
     .max(new Date().getFullYear() + 10),
-  category: z.string().min(2, "Kategori minimal 2 karakter"),
+  category_en: z.string().min(2, "Category must be at least 2 characters"),
+  category_id: z.string().min(2, "Kategori minimal 2 karakter"),
   logo: z.string().optional(),
   gallery: z.array(z.string()).optional(),
 });
@@ -80,8 +87,12 @@ export const userCVSchema = z.object({
 });
 
 export const userProjectSchema = z.object({
-  title: z.string().min(3, "Judul project minimal 3 karakter"),
-  description: z.string().min(10, "Deskripsi minimal 10 karakter"),
+  title_en: z.string().min(3, "Title must be at least 3 characters"),
+  title_id: z.string().min(3, "Judul project minimal 3 karakter"),
+  description_en: z
+    .string()
+    .min(10, "Description must be at least 10 characters"),
+  description_id: z.string().min(10, "Deskripsi minimal 10 karakter"),
   image: z.string().optional(),
   month: z.number().min(1).max(12),
   year: z
@@ -89,7 +100,7 @@ export const userProjectSchema = z.object({
     .min(1900)
     .max(new Date().getFullYear() + 10),
   technologies: z.array(z.string()).min(1, "Minimal 1 teknologi harus dipilih"),
-  github_url: z
+  githubUrl: z
     .string()
     .url("GitHub URL harus valid")
     .optional()
@@ -97,7 +108,8 @@ export const userProjectSchema = z.object({
 });
 
 export const userCertificateSchema = z.object({
-  name: z.string().min(3, "Nama sertifikat minimal 3 karakter"),
+  name_en: z.string().min(3, "Certificate name must be at least 3 characters"),
+  name_id: z.string().min(3, "Nama sertifikat minimal 3 karakter"),
   issuer: z.string().min(2, "Penerbit sertifikat minimal 2 karakter"),
   month: z.number().min(1).max(12),
   year: z
@@ -105,7 +117,7 @@ export const userCertificateSchema = z.object({
     .min(1900)
     .max(new Date().getFullYear() + 10),
   image: z.string().optional(),
-  credential_url: z
+  credentialUrl: z
     .string()
     .url("Credential URL harus valid")
     .optional()

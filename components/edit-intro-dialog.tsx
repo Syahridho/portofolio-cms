@@ -13,7 +13,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { IconEdit } from "@tabler/icons-react";
 import { userDescriptionSchema } from "@/lib/schemas";
@@ -29,12 +28,14 @@ import {
   FormMessage,
 } from "./ui/form";
 import { useUpdateDescription } from "@/hooks/use-description";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LocalizedContent } from "@/types";
 
 type UserDescriptionValues = z.infer<typeof userDescriptionSchema>;
 
 interface EditIntroDialogProps {
   currentName: string;
-  currentDescription: string;
+  currentDescription: LocalizedContent;
 }
 
 export function EditIntroDialog({
@@ -49,13 +50,23 @@ export function EditIntroDialog({
     resolver: zodResolver(userDescriptionSchema),
     defaultValues: {
       name: currentName || "",
-      description: currentDescription || "",
+      description_en: currentDescription?.en || "",
+      description_id: currentDescription?.id || "",
     },
   });
 
   const onSubmit = async (values: UserDescriptionValues) => {
     try {
-      updateDescription(values, {
+      // Convert form values to LocalizedContent format
+      const descriptionData = {
+        name: values.name,
+        description: {
+          en: values.description_en,
+          id: values.description_id,
+        },
+      };
+
+      updateDescription(descriptionData, {
         onSuccess: () => {
           form.reset(values);
           setOpen(false);
@@ -101,19 +112,61 @@ export function EditIntroDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Deskripsi</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Deskripsi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
+              {/* Tabs untuk Multi-bahasa */}
+              <div className="space-y-2">
+                <FormLabel>Deskripsi</FormLabel>
+                <Tabs defaultValue="id" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="id">🇮🇩 Indonesia</TabsTrigger>
+                    <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="id" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="description_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Deskripsi dalam bahasa Indonesia"
+                              rows={4}
+                              {...field}
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground">
+                            Deskripsi singkat tentang Anda (Bahasa Indonesia)
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="description_en"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Description in English"
+                              rows={4}
+                              {...field}
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground">
+                            Brief description about you (English)
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
 
             <DialogFooter>

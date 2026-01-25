@@ -1,3 +1,8 @@
+export interface LocalizedContent {
+  en: string;
+  id: string;
+}
+
 export interface SocialLinks {
   email: string;
   linkedin: string;
@@ -9,16 +14,13 @@ export interface SocialLinks {
 export interface UserProfile {
   name: string;
   jobTitle: string;
-  about: string;
-  avatarUrl: string;
-  photoURL: string;
-  resumeUrl: string;
+  photoUrl: string;
   socials: SocialLinks;
 }
 
 export interface UserDescription {
   name: string;
-  description: string;
+  description: LocalizedContent;
 }
 
 export interface UserSkills {
@@ -28,28 +30,28 @@ export interface UserSkills {
   icons: string;
 }
 
-export interface UserCarrer {
+export interface UserCareer {
   id: string;
   logo?: string;
   company: string;
-  position: string;
+  position: LocalizedContent;
   location: string;
   startMonth: number;
   startYear: number;
   endMonth: number | null;
   endYear: number | null;
-  description?: string;
+  description?: LocalizedContent;
   gallery?: string[];
 }
 
-export interface UserAchivement {
+export interface UserAchievement {
   id: string;
-  title: string;
+  title: LocalizedContent;
   organization: string;
   location: string;
   month: number;
   year: number;
-  category: string;
+  category: LocalizedContent;
   logo?: string;
   gallery?: string[];
 }
@@ -63,23 +65,23 @@ export interface UserCV {
 
 export interface UserProject {
   id: string;
-  title: string;
-  description: string;
+  title: LocalizedContent;
+  description: LocalizedContent;
   image: string;
   month: number;
   year: number;
   technologies: string[];
-  github_url: string;
+  githubUrl: string;
 }
 
 export interface UserCertificate {
   id: string;
-  name: string;
+  name: LocalizedContent;
   issuer: string;
   month: number;
   year: number;
   image?: string;
-  credential_url?: string;
+  credentialUrl?: string;
 }
 
 export interface UserContact {

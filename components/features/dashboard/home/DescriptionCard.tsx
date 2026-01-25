@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/card";
 import { EditIntroDialog } from "@/components/edit-intro-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function DescriptionCard() {
   const { data: apiData, isLoading } = useDescription();
+  const { getContent } = useI18n();
 
   if (isLoading) {
     return (
@@ -35,7 +37,10 @@ export default function DescriptionCard() {
 
   const data = apiData || {
     name: "Nama belum di atur",
-    description: "Deskripsi belum diatur",
+    description: {
+      id: "Deskripsi belum diatur",
+      en: "Description not set yet",
+    },
   };
 
   return (
@@ -44,7 +49,7 @@ export default function DescriptionCard() {
         <CardTitle className="text-2xl font-semibold">
           Hi, I'm {data.name}
         </CardTitle>
-        <CardDescription>{data.description}</CardDescription>
+        <CardDescription>{getContent(data.description)}</CardDescription>
 
         <CardAction>
           <EditIntroDialog

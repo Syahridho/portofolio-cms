@@ -48,7 +48,7 @@ export default function ProfileCard() {
   const data = profile || {
     name: "Nama Belum Diatur",
     jobTitle: "Pekerjaan Belum Diatur",
-    photoURL: "",
+    photoUrl: "",
     socials: {
       email: "",
       linkedin: "",
@@ -64,7 +64,7 @@ export default function ProfileCard() {
         {/* AVATAR */}
         <Avatar className="h-20 w-20">
           <AvatarImage
-            src={data.photoURL}
+            src={data.photoUrl}
             alt={data.name}
             className="object-cover"
           />
@@ -122,7 +122,7 @@ export default function ProfileCard() {
           <EditProfileDialog
             currentName={data.name}
             currentJobTitle={data.jobTitle}
-            currentAvatar={data.photoURL}
+            currentAvatar={data.photoUrl}
             currentEmail={data.socials?.email}
             currentLinkedin={data.socials?.linkedin}
             currentGithub={data.socials?.github}
