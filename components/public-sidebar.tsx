@@ -12,7 +12,7 @@ import {
   IconBrandLinkedin,
   IconMail,
 } from "@tabler/icons-react";
-import { initialProfile } from "@/lib/profile-data";
+import { useProfile } from "@/hooks/use-profile";
 import { Separator } from "@/components/ui/separator";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
@@ -26,13 +26,14 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLocale } from "@/lib/i18n-simple";
+import Image from "next/image";
 
 export function PublicSidebar() {
   const pathname = usePathname();
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const { t } = useLocale();
-
+  const { data: userProfile, isLoading } = useProfile();
   const navItems = [
     { name: t.common.home, href: "/", match: (path: string) => path === "/" },
     {
@@ -79,25 +80,35 @@ export function PublicSidebar() {
           >
             <Avatar className="h-20 w-20">
               <AvatarImage
-                src={initialProfile.avatar}
-                alt={initialProfile.name}
+                src={userProfile?.photoURL || undefined} // Gunakan undefined agar tidak error
+                alt={userProfile?.name || "User"}
+                className="object-cover" // Tambahkan ini agar gambar tidak gepeng
               />
               <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                {initialProfile.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .substring(0, 2)}
+                {userProfile?.name
+                  ?.split(" ")
+                  ?.map((n) => n[0])
+                  ?.join("")
+                  ?.substring(0, 2) || "SAS"}
               </AvatarFallback>
             </Avatar>
           </div>
           <div className="relative z-10 mb-0">
-            <h2 className="text-sm font-bold leading-tight">
-              {initialProfile.name}
+            <h2 className="text-sm font-bold leading-tight flex justify-center">
+              {isLoading ? (
+                <Skeleton className="h-4 w-32" /> // Beri tinggi (h-4) dan lebar (w-32)
+              ) : (
+                userProfile?.name || "No Name"
+              )}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1 mb-0">
-              {initialProfile.role}
-            </p>
+
+            <div className="text-sm text-muted-foreground mt-1 mb-0 flex justify-center">
+              {isLoading ? (
+                <Skeleton className="h-3 w-24 mt-1" />
+              ) : (
+                userProfile?.jobTitle || "No Job Title"
+              )}
+            </div>
           </div>
           {/* Language Switcher - Top Left */}
           <div className="absolute top-2 left-2 z-20">
@@ -150,11 +161,11 @@ export function PublicSidebar() {
               asChild
               className="text-muted-foreground hover:text-foreground"
             >
-              <a href={`mailto:${initialProfile.email}`}>
+              <a href={`mailto:${userProfile?.socials?.email || ""}`}>
                 <IconMail size={20} />
               </a>
             </Button>
-            {initialProfile.socials.linkedin && (
+            {userProfile?.socials?.linkedin && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -162,7 +173,7 @@ export function PublicSidebar() {
                 className="text-muted-foreground hover:text-foreground"
               >
                 <a
-                  href={initialProfile.socials.linkedin}
+                  href={userProfile?.socials?.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -170,7 +181,7 @@ export function PublicSidebar() {
                 </a>
               </Button>
             )}
-            {initialProfile.socials.github && (
+            {userProfile?.socials?.github && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -178,7 +189,7 @@ export function PublicSidebar() {
                 className="text-muted-foreground hover:text-foreground"
               >
                 <a
-                  href={initialProfile.socials.github}
+                  href={userProfile?.socials?.github}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -186,7 +197,7 @@ export function PublicSidebar() {
                 </a>
               </Button>
             )}
-            {initialProfile.socials.instagram && (
+            {userProfile?.socials?.instagram && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -194,7 +205,7 @@ export function PublicSidebar() {
                 className="text-muted-foreground hover:text-foreground"
               >
                 <a
-                  href={initialProfile.socials.instagram}
+                  href={userProfile?.socials?.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -206,25 +217,30 @@ export function PublicSidebar() {
         </div>
       </div>
 
-      {/* Avatar Modal Dialog */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
         <DialogContent className="sm:max-w-[500px] pt-12">
           <VisuallyHidden>
             <DialogTitle>Profile picture</DialogTitle>
           </VisuallyHidden>
           <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
-            {isImageLoading && (
+            {/* Jika status loading TRUE atau foto tidak ada, tampilkan Skeleton */}
+            {isImageLoading || !userProfile?.photoURL ? (
               <Skeleton className="absolute inset-0 w-full h-full" />
+            ) : null}
+
+            {/* Render Image hanya jika photoURL ada */}
+            {userProfile?.photoURL && (
+              <Image
+                src={userProfile.photoURL}
+                alt={userProfile?.name || "User profile"}
+                fill // Gunakan fill agar mengisi container aspect-square
+                className={cn(
+                  "object-cover transition-opacity duration-300",
+                  isImageLoading ? "opacity-0" : "opacity-100"
+                )}
+                onLoadingComplete={() => setIsImageLoading(false)}
+              />
             )}
-            <img
-              src={initialProfile.avatar}
-              alt={initialProfile.name}
-              className={cn(
-                "w-full h-full object-cover transition-opacity duration-300",
-                isImageLoading ? "opacity-0" : "opacity-100"
-              )}
-              onLoad={() => setIsImageLoading(false)}
-            />
           </div>
         </DialogContent>
       </Dialog>

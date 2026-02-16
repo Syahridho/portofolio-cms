@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IconBrandGithub, IconCalendar } from "@tabler/icons-react";
 import { UserProject } from "@/types";
+import { useI18n } from "@/hooks/use-i18n";
 
 interface ProjectDetailDialogProps {
   open: boolean;
@@ -39,13 +40,17 @@ export function ProjectDetailDialog({
   onOpenChange,
   project,
 }: ProjectDetailDialogProps) {
+  const { getContent } = useI18n();
+
   if (!project) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{project.title}</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {getContent(project.title)}
+          </DialogTitle>
           <DialogDescription className="flex items-center gap-2 text-sm">
             <IconCalendar size={16} />
             {MONTHS[project.month]} {project.year}
@@ -58,7 +63,7 @@ export function ProjectDetailDialog({
             <div className="w-full h-64 rounded-lg overflow-hidden border bg-muted">
               <img
                 src={project.image}
-                alt={project.title}
+                alt={getContent(project.title)}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -68,7 +73,7 @@ export function ProjectDetailDialog({
           <div className="space-y-2">
             <h3 className="font-semibold text-lg">Deskripsi</h3>
             <p className="text-muted-foreground leading-relaxed">
-              {project.description}
+              {getContent(project.description)}
             </p>
           </div>
 
@@ -85,13 +90,13 @@ export function ProjectDetailDialog({
           </div>
 
           {/* GitHub Link */}
-          {project.github_url && (
+          {project.githubUrl && (
             <div className="space-y-3">
               <h3 className="font-semibold text-lg">Repository</h3>
               <Button
                 variant="outline"
                 className="w-full justify-start"
-                onClick={() => window.open(project.github_url, "_blank")}
+                onClick={() => window.open(project.githubUrl, "_blank")}
               >
                 <IconBrandGithub className="mr-2 h-4 w-4" />
                 Lihat di GitHub

@@ -9,13 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCarrers } from "@/hooks/use-carrer";
+import { useCareers } from "@/hooks/use-career";
 import { UserCareer } from "@/types";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function CarrerCard() {
-  const { data: apiData, isLoading } = useCarrers();
+  const { data: apiData, isLoading } = useCareers();
   const { getContent } = useI18n();
 
   if (isLoading) {

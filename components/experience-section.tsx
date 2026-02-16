@@ -21,7 +21,7 @@ export const ExperienceItem = ({
   data,
   value,
 }: {
-  data: Experience;
+  data: Experience | any;
   value: string;
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -72,7 +72,9 @@ export const ExperienceItem = ({
             <div className="flex flex-col">
               <div className="flex items-center justify-between gap-x-2 text-base">
                 <h3 className="inline-flex items-center justify-center font-semibold leading-none text-xs sm:text-sm">
-                  {data.title}
+                  {typeof data.title === "string"
+                    ? data.title
+                    : data.title?.id || data.title?.en || ""}
                   <span className="inline-flex gap-x-1"></span>
                   <IconChevronRight
                     className={`size-4 translate-x-0 transform opacity-0 transition-all duration-300 ease-out group-hover:translate-x-1 group-hover:opacity-100 ${
@@ -84,7 +86,11 @@ export const ExperienceItem = ({
                   {data.date}
                 </div>
               </div>
-              <div className="font-sans text-xs">{data.location}</div>
+              <div className="font-sans text-xs">
+                {typeof data.location === "string"
+                  ? data.location
+                  : data.location?.id || data.location?.en || ""}
+              </div>
             </div>
 
             <div
@@ -92,10 +98,12 @@ export const ExperienceItem = ({
                 isExpanded ? "opacity-100 max-h-[1000px]" : "opacity-0 max-h-0"
               }`}
             >
-              {data.description}
+              {typeof data.description === "string"
+                ? data.description
+                : data.description?.id || data.description?.en || ""}
               {data.gallerys && data.gallerys.length > 0 && (
                 <div className="mt-4 flex flex-row flex-wrap items-start gap-2">
-                  {data.gallerys.map((imgUrl, idx) => (
+                  {data.gallerys.map((imgUrl: string, idx: number) => (
                     <button
                       key={idx}
                       type="button"

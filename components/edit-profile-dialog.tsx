@@ -91,7 +91,7 @@ export function EditProfileDialog({
     setAvatarPreview(null);
     setSelectedFile(null);
     const fileInput = document.getElementById(
-      "avatar-input",
+      "avatar-input"
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     form.setValue("photoURL", currentAvatar || "");
@@ -116,7 +116,7 @@ export function EditProfileDialog({
             setSelectedFile(null);
             setAvatarPreview(null);
           },
-        },
+        }
       );
     } catch (error) {
       console.error(error);
@@ -315,8 +315,8 @@ export function EditProfileDialog({
                 {isUploading
                   ? "Mengunggah Gambar..."
                   : isSaving
-                    ? "Menyimpan..."
-                    : "Simpan Perubahan"}
+                  ? "Menyimpan..."
+                  : "Simpan Perubahan"}
               </Button>
             </DialogFooter>
           </form>

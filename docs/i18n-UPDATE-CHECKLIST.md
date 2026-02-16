@@ -91,20 +91,24 @@ const t = useTranslations("namespace");
 **Dialogs yang perlu diupdate:**
 
 - [ ] `components/features/dashboard/home/EditProfileDialog.tsx`
+
   - [ ] Add Tabs untuk jobTitle (en/id)
   - [ ] Add Tabs untuk about (en/id)
   - [ ] Update labels dengan translations
 
 - [ ] `components/features/dashboard/home/EditDescriptionDialog.tsx`
+
   - [ ] Add Tabs untuk description (en/id)
   - [ ] Update labels dengan translations
 
 - [ ] `components/features/dashboard/career/EditCareerDialog.tsx`
+
   - [ ] Add Tabs untuk position (en/id)
   - [ ] Add Tabs untuk description (en/id)
   - [ ] Update labels dengan translations
 
 - [ ] `components/features/dashboard/achievements/EditAchievementDialog.tsx`
+
   - [ ] Add Tabs untuk title (en/id)
   - [ ] Add Tabs untuk category (en/id)
   - [ ] Update labels dengan translations
@@ -175,6 +179,7 @@ const t = useTranslations("namespace");
 #### 5. Navigation & Layout
 
 - [ ] `components/site-header.tsx`
+
   - [ ] Update navigation labels dengan `t('nav.*')`
   - [ ] Pastikan LanguageSwitcher sudah ada
 

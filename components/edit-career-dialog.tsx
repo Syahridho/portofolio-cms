@@ -57,7 +57,7 @@ import {
   useAddCareer,
   useDeleteCareer,
   useUpdateCareer,
-} from "@/hooks/use-carrer";
+} from "@/hooks/use-career";
 import { userCareerSchema } from "@/lib/schemas";
 import { uploadAvatar, uploadMultipleGalleries } from "@/services/home.service";
 import { toast } from "sonner";
@@ -85,7 +85,7 @@ const MONTHS = [
 
 const YEARS = Array.from(
   { length: 30 },
-  (_, i) => new Date().getFullYear() - i,
+  (_, i) => new Date().getFullYear() - i
 );
 
 export function EditCareerDialog({
@@ -237,7 +237,7 @@ export function EditCareerDialog({
     // If it's an existing URL (starts with http), remove from existingGalleryUrls
     if (previewToRemove.startsWith("http")) {
       setExistingGalleryUrls((prev) =>
-        prev.filter((url) => url !== previewToRemove),
+        prev.filter((url) => url !== previewToRemove)
       );
     } else {
       // If it's a new file (data:image), find and remove from galleryFiles
@@ -256,7 +256,7 @@ export function EditCareerDialog({
     setLogoPreview(null);
     setLogoFile(null);
     const fileInput = document.getElementById(
-      "logo-upload",
+      "logo-upload"
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   };
@@ -330,7 +330,7 @@ export function EditCareerDialog({
             onError: () => {
               setIsUploading(false);
             },
-          },
+          }
         );
       } else {
         // Add new career
@@ -381,7 +381,7 @@ export function EditCareerDialog({
     startMonth: number,
     startYear: number,
     endMonth: number | null,
-    endYear: number | null,
+    endYear: number | null
   ) => {
     const startMonthName =
       MONTHS.find((m) => m.value === startMonth)?.label || "";
@@ -473,7 +473,7 @@ export function EditCareerDialog({
                           career.startMonth,
                           career.startYear,
                           career.endMonth,
-                          career.endYear,
+                          career.endYear
                         )}
                       </p>
                       {career.description && (
@@ -927,12 +927,12 @@ export function EditCareerDialog({
                   {isUploading
                     ? "Mengupload..."
                     : editMode === "edit"
-                      ? isUpdating
-                        ? "Memperbarui..."
-                        : "Perbarui Karir"
-                      : isAdding
-                        ? "Menambahkan..."
-                        : "Tambah Karir"}
+                    ? isUpdating
+                      ? "Memperbarui..."
+                      : "Perbarui Karir"
+                    : isAdding
+                    ? "Menambahkan..."
+                    : "Tambah Karir"}
                 </Button>
               </DialogFooter>
             </form>

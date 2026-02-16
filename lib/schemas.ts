@@ -2,14 +2,38 @@ import { z } from "zod";
 
 export const userProfileSchema = z.object({
   name: z.string().min(3, "Nama minimal 3 karakter"),
-  photoURL: z.string().url("Foto harus URL yang valid"),
+  photoURL: z
+    .string()
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: "Foto harus URL yang valid",
+    }),
   jobTitle: z.string().min(3, "Pekerjaan minimal 3 karakter"),
   socials: z.object({
-    email: z.string().email("Email harus valid"),
-    linkedin: z.string().url("LinkedIn harus URL yang valid"),
-    github: z.string().url("GitHub harus URL yang valid"),
-    instagram: z.string().url("Instagram harus URL yang valid"),
-    whatsapp: z.string().url("WhatsApp harus URL yang valid"),
+    email: z
+      .string()
+      .refine((val) => !val || z.string().email().safeParse(val).success, {
+        message: "Email harus valid",
+      }),
+    linkedin: z
+      .string()
+      .refine((val) => !val || z.string().url().safeParse(val).success, {
+        message: "LinkedIn harus URL yang valid",
+      }),
+    github: z
+      .string()
+      .refine((val) => !val || z.string().url().safeParse(val).success, {
+        message: "GitHub harus URL yang valid",
+      }),
+    instagram: z
+      .string()
+      .refine((val) => !val || z.string().url().safeParse(val).success, {
+        message: "Instagram harus URL yang valid",
+      }),
+    whatsapp: z
+      .string()
+      .refine((val) => !val || z.string().url().safeParse(val).success, {
+        message: "WhatsApp harus URL yang valid",
+      }),
   }),
 });
 
@@ -34,7 +58,7 @@ export const userSkillSchema = z.object({
           "Database",
           "Tools & Others",
         ].includes(val),
-      { message: "Pilih kategori yang valid" },
+      { message: "Pilih kategori yang valid" }
     ),
   icons: z
     .string()

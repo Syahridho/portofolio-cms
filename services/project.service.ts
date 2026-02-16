@@ -63,7 +63,7 @@ export const addUserProject = async (newProject: UserProject) => {
     {
       items: arrayUnion(cleanedProject),
     },
-    { merge: true },
+    { merge: true }
   );
 };
 
@@ -79,7 +79,7 @@ export const deleteUserProject = async (projectToDelete: UserProject) => {
 // Update project
 export const updateUserProject = async (
   oldProject: UserProject,
-  updatedProject: UserProject,
+  updatedProject: UserProject
 ) => {
   const docRef = doc(db, "userProfile", "projects");
   const cleanedProject = removeUndefined(updatedProject);

@@ -21,10 +21,8 @@ import {
 } from "@tabler/icons-react";
 
 export default function ProfileCard() {
-  // 1. Ambil data dari Firebase
   const { data: profile, isLoading } = useProfile();
 
-  // 2. Tampilkan Loading State (Skeleton) jika data belum siap
   if (isLoading) {
     return (
       <Card className="@container/card h-full">
@@ -44,11 +42,10 @@ export default function ProfileCard() {
     );
   }
 
-  // 3. Fallback jika data kosong (User baru)
   const data = profile || {
     name: "Nama Belum Diatur",
     jobTitle: "Pekerjaan Belum Diatur",
-    photoUrl: "",
+    photoURL: "",
     socials: {
       email: "",
       linkedin: "",
@@ -64,13 +61,10 @@ export default function ProfileCard() {
         {/* AVATAR */}
         <Avatar className="h-20 w-20">
           <AvatarImage
-            src={data.photoUrl}
-            alt={data.name}
+            src={data?.photoURL || "/default-avatar.jpg"}
+            alt={data?.name}
             className="object-cover"
           />
-          <AvatarFallback>
-            {data.name.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
         </Avatar>
 
         <div className="flex flex-1 flex-col gap-1">
@@ -122,7 +116,7 @@ export default function ProfileCard() {
           <EditProfileDialog
             currentName={data.name}
             currentJobTitle={data.jobTitle}
-            currentAvatar={data.photoUrl}
+            currentAvatar={data.photoURL}
             currentEmail={data.socials?.email}
             currentLinkedin={data.socials?.linkedin}
             currentGithub={data.socials?.github}

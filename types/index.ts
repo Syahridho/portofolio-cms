@@ -14,7 +14,7 @@ export interface SocialLinks {
 export interface UserProfile {
   name: string;
   jobTitle: string;
-  photoUrl: string;
+  photoURL: string;
   socials: SocialLinks;
 }
 
@@ -55,6 +55,9 @@ export interface UserAchievement {
   logo?: string;
   gallery?: string[];
 }
+
+// Alias untuk backward compatibility (typo di beberapa file)
+export type UserAchivement = UserAchievement;
 
 export interface UserCV {
   id: string;

@@ -12,7 +12,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  deleteDoc,
   updateDoc,
   arrayUnion,
   arrayRemove,
@@ -101,7 +100,7 @@ export const addUserSkill = async (newSkill: UserSkills) => {
     {
       items: arrayUnion(cleanedSkill),
     },
-    { merge: true },
+    { merge: true }
   );
 };
 
@@ -136,7 +135,7 @@ export const addUserCarrer = async (newCarrer: UserCareer) => {
     {
       items: arrayUnion(cleanedCarrer),
     },
-    { merge: true },
+    { merge: true }
   );
 };
 
@@ -150,7 +149,7 @@ export const deleteUserCarrer = async (carrerToDelete: UserCareer) => {
 
 export const updateUserCarrer = async (
   oldCareer: UserCareer,
-  updatedCareer: UserCareer,
+  updatedCareer: UserCareer
 ) => {
   const docRef = doc(db, "userProfile", "carrer");
   const cleanedCareer = removeUndefined(updatedCareer);
@@ -166,7 +165,7 @@ export const updateUserCarrer = async (
 };
 
 export const uploadMultipleGalleries = async (
-  files: File[],
+  files: File[]
 ): Promise<string[]> => {
   try {
     const uploadPromises = files.map((file) => uploadAvatar(file));
@@ -201,12 +200,12 @@ export const addUserAchivement = async (newAchivement: UserAchievement) => {
     {
       items: arrayUnion(cleanedAchivement),
     },
-    { merge: true },
+    { merge: true }
   );
 };
 
 export const deleteUserAchivement = async (
-  achivementToDelete: UserAchievement,
+  achivementToDelete: UserAchievement
 ) => {
   const docRef = doc(db, "userProfile", "achivement");
 
@@ -217,7 +216,7 @@ export const deleteUserAchivement = async (
 
 export const updateUserAchivement = async (
   oldAchievement: UserAchievement,
-  updatedAchievement: UserAchievement,
+  updatedAchievement: UserAchievement
 ) => {
   const docRef = doc(db, "userProfile", "achivement");
   const cleanedAchievement = removeUndefined(updatedAchievement);
@@ -272,7 +271,7 @@ export const addUserCV = async (newCV: UserCV) => {
     {
       items: arrayUnion(cleanedCV),
     },
-    { merge: true },
+    { merge: true }
   );
 };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   IconChartBar,
@@ -12,7 +13,13 @@ import {
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
+
+// Import NavUser dynamically with ssr: false to prevent hydration mismatch
+const NavUser = dynamic(
+  () =>
+    import("@/components/nav-user").then((mod) => ({ default: mod.NavUser })),
+  { ssr: false },
+);
 import {
   Sidebar,
   SidebarContent,
