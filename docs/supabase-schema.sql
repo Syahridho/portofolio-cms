@@ -73,7 +73,8 @@ CREATE TABLE user_projects (
   month INT NOT NULL,
   year INT NOT NULL,
   technologies TEXT[] DEFAULT '{}',
-  github_url TEXT
+  github_url TEXT,
+  live_demo TEXT
 );
 
 -- Certificates (replaces Firestore userProfile/certificates → items array)
@@ -84,7 +85,9 @@ CREATE TABLE user_certificates (
   month INT NOT NULL,
   year INT NOT NULL,
   image TEXT,
-  credential_url TEXT
+  credential_url TEXT,
+  category TEXT DEFAULT 'Other',
+  is_star BOOLEAN DEFAULT false
 );
 
 -- Contacts (replaces Firestore contacts collection)

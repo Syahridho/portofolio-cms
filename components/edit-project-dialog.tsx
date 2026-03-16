@@ -95,6 +95,7 @@ export function EditProjectDialog({
       year: new Date().getFullYear(),
       technologies: [],
       githubUrl: "",
+      liveDemoUrl: "",
     },
   });
 
@@ -123,6 +124,7 @@ export function EditProjectDialog({
         year: project.year,
         technologies: project.technologies,
         githubUrl: project.githubUrl || "",
+        liveDemoUrl: project.liveDemoUrl || "",
       });
       setTechnologies(project.technologies);
       if (project.image) {
@@ -196,6 +198,7 @@ export function EditProjectDialog({
         technologies: values.technologies,
         image: imageUrl,
         githubUrl: values.githubUrl || "",
+        liveDemoUrl: values.liveDemoUrl || "",
       };
 
       if (mode === "edit" && project) {
@@ -242,6 +245,7 @@ export function EditProjectDialog({
       year: new Date().getFullYear(),
       technologies: [],
       githubUrl: "",
+      liveDemoUrl: "",
     });
     setImagePreview(null);
     setImageFile(null);
@@ -447,22 +451,42 @@ export function EditProjectDialog({
               )}
             </div>
 
-            <FormField
-              control={form.control}
-              name="githubUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>GitHub URL (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://github.com/username/repo"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Links Sections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="githubUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GitHub URL (Opsional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://github.com/username/repo"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="liveDemoUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Live Demo URL (Opsional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Date */}
             <div className="grid grid-cols-2 gap-3">

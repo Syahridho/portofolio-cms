@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,8 @@ import {
   IconPencil,
   IconTrash,
   IconExternalLink,
+  IconStar,
+  IconStarFilled,
 } from "@tabler/icons-react";
 import { UserCertificate } from "@/types";
 import { useCertificates, useDeleteCertificate } from "@/hooks/use-certificate";
@@ -206,18 +209,30 @@ export default function Page() {
 
                         {/* Content Info */}
                         <div className="p-4 pt-2 flex flex-col gap-1">
-                          <h3
-                            className="font-semibold leading-tight line-clamp-2"
-                            title={getContent(cert.name)}
-                          >
-                            {getContent(cert.name)}
-                          </h3>
+                          <div className="flex items-center gap-1.5">
+                            {cert.isStar && (
+                              <IconStarFilled className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+                            )}
+                            <h3
+                              className="font-semibold leading-tight line-clamp-2"
+                              title={getContent(cert.name)}
+                            >
+                              {getContent(cert.name)}
+                            </h3>
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {cert.issuer}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {months[cert.month]} {cert.year}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-muted-foreground">
+                              {months[cert.month]} {cert.year}
+                            </p>
+                            {cert.category && cert.category !== "Other" && (
+                              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                                {cert.category}
+                              </Badge>
+                            )}
+                          </div>
                           {cert.credentialUrl && (
                             <Button
                               variant="link"

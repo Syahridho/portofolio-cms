@@ -40,6 +40,8 @@ import {
   IconTrash,
   IconEye,
   IconSearch,
+  IconBrandGithub,
+  IconExternalLink,
 } from "@tabler/icons-react";
 import { UserProject } from "@/types";
 import { useProjects, useDeleteProject } from "@/hooks/use-project";
@@ -210,10 +212,22 @@ export default function Page() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex flex-col">
-                                <span className="font-semibold">
-                                  {getContent(project.title)}
-                                </span>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold">
+                                    {getContent(project.title)}
+                                  </span>
+                                  {project.githubUrl && (
+                                    <a href={project.githubUrl} target="_blank" rel="noreferrer" title="GitHub Repo" className="text-muted-foreground hover:text-foreground">
+                                      <IconBrandGithub className="h-4 w-4" />
+                                    </a>
+                                  )}
+                                  {project.liveDemoUrl && (
+                                    <a href={project.liveDemoUrl} target="_blank" rel="noreferrer" title="Live Demo" className="text-muted-foreground hover:text-foreground">
+                                      <IconExternalLink className="h-4 w-4" />
+                                    </a>
+                                  )}
+                                </div>
                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">
                                   {getContent(project.description)}
                                 </span>

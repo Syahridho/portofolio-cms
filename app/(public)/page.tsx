@@ -23,7 +23,7 @@ import AchievementSection from "@/components/achievement-section";
 import { ClientOnly } from "@/components/ui/client-only";
 import ExperienceSection from "@/components/experience-section";
 import { Skeleton } from "@/components/ui/skeleton";
-import { initialCVs } from "@/lib/cv-data";
+import { useCVs } from "@/hooks/use-cv";
 
 // Import hooks
 import { useProfile } from "@/hooks/use-profile";
@@ -46,11 +46,13 @@ export default function HomePage() {
 
   console.log(achievementsData);
   const { data: careersData, isLoading: isLoadingCareers } = useCareers();
+  const { data: cvsData } = useCVs();
 
   // Extract items from response
   const skills = skillsData?.items || [];
   const achievements = achievementsData?.items || [];
   const careers = careersData?.items || [];
+  const cvs = cvsData?.items || [];
 
   return (
     <div className="space-y-12">
@@ -69,7 +71,7 @@ export default function HomePage() {
               </h1>
             )}
           </div>
-          {initialCVs.length > 0 && (
+          {cvs.length > 0 && (
             <ClientOnly
               fallback={
                 <RainbowButton
@@ -90,7 +92,7 @@ export default function HomePage() {
                   </RainbowButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[180px]">
-                  {initialCVs.map((cv) => (
+                  {cvs.map((cv) => (
                     <DropdownMenuItem key={cv.id} asChild>
                       <a
                         href={cv.fileUrl}

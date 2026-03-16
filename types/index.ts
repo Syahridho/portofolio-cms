@@ -75,6 +75,7 @@ export interface UserProject {
   year: number;
   technologies: string[];
   githubUrl: string;
+  liveDemoUrl?: string;
 }
 
 export interface UserCertificate {
@@ -85,6 +86,8 @@ export interface UserCertificate {
   year: number;
   image?: string;
   credentialUrl?: string;
+  category?: string;
+  isStar?: boolean;
 }
 
 export interface UserContact {

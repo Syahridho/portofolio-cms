@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { IconX } from "@tabler/icons-react";
 import { UserCertificate } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,6 +70,15 @@ const YEARS = Array.from(
   (_, i) => new Date().getFullYear() - i,
 );
 
+const CATEGORIES = [
+  "FrontEnd Developer",
+  "BackEnd Developer",
+  "DevOps Developer",
+  "Machine Learning",
+  "Mobile App Developer",
+  "Other",
+];
+
 export function EditCertificateDialog({
   open,
   onOpenChange,
@@ -93,6 +103,8 @@ export function EditCertificateDialog({
       year: new Date().getFullYear(),
       image: "",
       credentialUrl: "",
+      category: "Other",
+      isStar: false,
     },
   });
 
@@ -113,6 +125,8 @@ export function EditCertificateDialog({
         year: certificate.year,
         image: certificate.image || "",
         credentialUrl: certificate.credentialUrl || "",
+        category: certificate.category || "Other",
+        isStar: certificate.isStar || false,
       });
       if (certificate.image) {
         setImagePreview(certificate.image);
@@ -167,6 +181,8 @@ export function EditCertificateDialog({
         issuer: values.issuer,
         month: values.month,
         year: values.year,
+        category: values.category || "Other",
+        isStar: values.isStar || false,
       };
 
       // Only add optional fields if they have values
@@ -219,6 +235,8 @@ export function EditCertificateDialog({
       year: new Date().getFullYear(),
       image: "",
       credentialUrl: "",
+      category: "Other",
+      isStar: false,
     });
     setImagePreview(null);
     setImageFile(null);
@@ -418,6 +436,57 @@ export function EditCertificateDialog({
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category */}
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kategori</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || "Other"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih kategori" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Is Star Toggle */}
+            <FormField
+              control={form.control}
+              name="isStar"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Tampilkan di Halaman Utama</FormLabel>
+                    <p className="text-xs text-muted-foreground">
+                      Aktifkan untuk menampilkan sertifikat ini di halaman publik (maks. 6)
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

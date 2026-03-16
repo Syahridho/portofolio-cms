@@ -129,6 +129,11 @@ export const userProjectSchema = z.object({
     .url("GitHub URL harus valid")
     .optional()
     .or(z.literal("")),
+  liveDemoUrl: z
+    .string()
+    .url("Live Demo URL harus valid")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const userCertificateSchema = z.object({
@@ -146,4 +151,6 @@ export const userCertificateSchema = z.object({
     .url("Credential URL harus valid")
     .optional()
     .or(z.literal("")),
+  category: z.string().optional(),
+  isStar: z.boolean().optional(),
 });

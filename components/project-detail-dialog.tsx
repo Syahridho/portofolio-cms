@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconBrandGithub, IconCalendar } from "@tabler/icons-react";
+import { IconBrandGithub, IconCalendar, IconExternalLink } from "@tabler/icons-react";
 import { UserProject } from "@/types";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -89,18 +89,32 @@ export function ProjectDetailDialog({
             </div>
           </div>
 
-          {/* GitHub Link */}
-          {project.githubUrl && (
+          {/* Links */}
+          {(project.githubUrl || project.liveDemoUrl) && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">Repository</h3>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => window.open(project.githubUrl, "_blank")}
-              >
-                <IconBrandGithub className="mr-2 h-4 w-4" />
-                Lihat di GitHub
-              </Button>
+              <h3 className="font-semibold text-lg">Tautan Eksternal</h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {project.githubUrl && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => window.open(project.githubUrl, "_blank")}
+                  >
+                    <IconBrandGithub className="mr-2 h-4 w-4" />
+                    GitHub Repo
+                  </Button>
+                )}
+                {project.liveDemoUrl && (
+                  <Button
+                    variant="default"
+                    className="w-full justify-start"
+                    onClick={() => window.open(project.liveDemoUrl, "_blank")}
+                  >
+                    <IconExternalLink className="mr-2 h-4 w-4" />
+                    Live Demo
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>

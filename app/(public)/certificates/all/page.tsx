@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,27 +15,59 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLocale } from "@/lib/i18n-simple";
-import { initialCertificates, CertificateItem } from "@/lib/certificate-data";
 import { IconArrowLeft } from "@tabler/icons-react";
-
-type RoleFilter = "all" | "frontend" | "backend" | "cloud" | "other";
+import { useCertificates } from "@/hooks/use-certificate";
 
 export default function AllCertificatesPage() {
   const { t } = useLocale();
-  const [selectedRole, setSelectedRole] = useState<RoleFilter>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+  const { data, isLoading } = useCertificates();
 
-  const filteredCertificates = initialCertificates.filter((cert) => {
-    if (selectedRole === "all") return true;
-    return cert.role === selectedRole;
+  // Map UserCertificate to UI format using real category from DB
+  const certificates = useMemo(
+    () =>
+      (data?.items || []).map((cert) => {
+        const name =
+          typeof cert.name === "string"
+            ? cert.name
+            : cert.name?.id || cert.name?.en || "";
+
+        return {
+          id: cert.id,
+          name,
+          image: cert.image || "https://placehold.co/600x400/png?text=No+Image",
+          month: cert.month,
+          year: cert.year,
+          category: cert.category || "Other",
+        };
+      }),
+    [data],
+  );
+
+  // Build category list with counts from actual data
+  const categoryOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+    certificates.forEach((cert) => {
+      counts[cert.category] = (counts[cert.category] || 0) + 1;
+    });
+    const options = Object.entries(counts)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cat, count]) => ({ key: cat, label: `${cat} ${count}` }));
+    return [
+      {
+        key: "all",
+        label: `${t.certificates.roleAll} ${certificates.length}`,
+      },
+      ...options,
+    ];
+  }, [certificates, t]);
+
+  const filteredCertificates = certificates.filter((cert) => {
+    if (selectedCategory === "all") return true;
+    return cert.category === selectedCategory;
   });
 
   const openModal = (imageUrl: string) => {
@@ -47,14 +79,6 @@ export default function AllCertificatesPage() {
     setIsModalOpen(false);
     setSelectedImage(null);
   };
-
-  const roles: { key: RoleFilter; label: string }[] = [
-    { key: "all", label: t.certificates.roleAll },
-    { key: "frontend", label: t.certificates.roleFrontend },
-    { key: "backend", label: t.certificates.roleBackend },
-    { key: "cloud", label: t.certificates.roleCloud },
-    { key: "other", label: t.certificates.roleOther },
-  ];
 
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
@@ -79,16 +103,16 @@ export default function AllCertificatesPage() {
               {t.certificates.filterByRole}:
             </label>
             <Select
-              value={selectedRole}
-              onValueChange={(value) => setSelectedRole(value as RoleFilter)}
+              value={selectedCategory}
+              onValueChange={(value) => setSelectedCategory(value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder={t.certificates.roleAll} />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
-                  <SelectItem key={role.key} value={role.key}>
-                    {role.label}
+                {categoryOptions.map((opt) => (
+                  <SelectItem key={opt.key} value={opt.key}>
+                    {opt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -129,11 +153,9 @@ export default function AllCertificatesPage() {
                     {cert.name}
                   </p>
                   <p className="text-xs">
-                    {new Date(cert.issuedDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {cert.month && cert.year
+                      ? `${cert.month}/${cert.year}`
+                      : cert.year}
                   </p>
                 </div>
               </div>

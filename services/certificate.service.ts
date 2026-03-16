@@ -41,6 +41,8 @@ export const getUserCertificates = async (): Promise<{
       year: row.year,
       image: row.image,
       credentialUrl: row.credential_url,
+      category: row.category || "Other",
+      isStar: row.is_star || false,
     })) as UserCertificate[],
   };
 };
@@ -55,6 +57,8 @@ export const addUserCertificate = async (newCertificate: UserCertificate) => {
     year: newCertificate.year,
     image: newCertificate.image,
     credential_url: newCertificate.credentialUrl,
+    category: newCertificate.category || "Other",
+    is_star: newCertificate.isStar || false,
   });
 
   if (error) throw error;
@@ -86,6 +90,8 @@ export const updateUserCertificate = async (
       year: updatedCertificate.year,
       image: updatedCertificate.image,
       credential_url: updatedCertificate.credentialUrl,
+      category: updatedCertificate.category || "Other",
+      is_star: updatedCertificate.isStar || false,
     })
     .eq("id", oldCertificate.id);
 

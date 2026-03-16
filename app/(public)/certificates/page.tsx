@@ -1,26 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { initialCertificates } from "@/lib/certificate-data";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useLocale } from "@/lib/i18n-simple";
+import { useCertificates } from "@/hooks/use-certificate";
 
 export default function CertificatesPage() {
   const { t } = useLocale();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+  const { data, isLoading } = useCertificates();
 
   const openModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -32,9 +26,17 @@ export default function CertificatesPage() {
     setSelectedImage(null);
   };
 
-  const featuredCertificates = initialCertificates.filter(
-    (cert) => cert.isFeatured
-  );
+  // Show only starred certificates on the main page (max 6)
+  const certificates = (data?.items || [])
+    .filter(cert => cert.isStar === true)
+    .slice(0, 6)
+    .map(cert => ({
+      id: cert.id,
+      name: typeof cert.name === "string" 
+        ? cert.name 
+        : cert.name?.id || cert.name?.en || "",
+      image: cert.image || "https://placehold.co/600x400/png?text=No+Image"
+    }));
 
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
@@ -58,7 +60,7 @@ export default function CertificatesPage() {
                 </div>
               </Card>
             ))
-          : featuredCertificates.map((cert) => (
+          : certificates.map((cert) => (
               <div
                 key={cert.id}
                 className="group relative cursor-pointer overflow-hidden rounded-lg"

@@ -40,6 +40,7 @@ export const getUserProjects = async (): Promise<{
       year: row.year,
       technologies: row.technologies,
       githubUrl: row.github_url,
+      liveDemoUrl: row.live_demo,
     })) as UserProject[],
   };
 };
@@ -55,6 +56,7 @@ export const addUserProject = async (newProject: UserProject) => {
     year: newProject.year,
     technologies: newProject.technologies,
     github_url: newProject.githubUrl,
+    live_demo: newProject.liveDemoUrl,
   });
 
   if (error) throw error;
@@ -85,6 +87,7 @@ export const updateUserProject = async (
       year: updatedProject.year,
       technologies: updatedProject.technologies,
       github_url: updatedProject.githubUrl,
+      live_demo: updatedProject.liveDemoUrl,
     })
     .eq("id", oldProject.id);
 
