@@ -1,38 +1,21 @@
-import { db } from "@/lib/firebase";
-import { storage } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { UserProject } from "@/types/index";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-} from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-// Helper function to remove undefined values from objects
-const removeUndefined = <T extends Record<string, any>>(obj: T): T => {
-  const cleaned = { ...obj };
-  Object.keys(cleaned).forEach((key) => {
-    if (cleaned[key] === undefined) {
-      delete cleaned[key];
-    }
-  });
-  return cleaned;
-};
-
-// Upload project image to Firebase Storage
+// Upload project image to Supabase Storage
 export const uploadProjectImage = async (file: File): Promise<string> => {
   try {
-    const fileName = `projects/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, fileName);
+    const fileName = `${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage
+      .from("projects")
+      .upload(fileName, file);
 
-    const snapshot = await uploadBytes(storageRef, file);
+    if (error) throw error;
 
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("projects").getPublicUrl(fileName);
 
-    return downloadURL;
+    return publicUrl;
   } catch (error) {
     console.error("Error uploading project image: ", error);
     throw error;
@@ -43,53 +26,67 @@ export const uploadProjectImage = async (file: File): Promise<string> => {
 export const getUserProjects = async (): Promise<{
   items: UserProject[];
 } | null> => {
-  const docRef = doc(db, "userProfile", "projects");
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    return { items: data.items || [] };
-  } else {
-    return { items: [] };
-  }
+  const { data, error } = await supabase.from("user_projects").select("*");
+
+  if (error) return { items: [] };
+
+  return {
+    items: (data || []).map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      image: row.image,
+      month: row.month,
+      year: row.year,
+      technologies: row.technologies,
+      githubUrl: row.github_url,
+    })) as UserProject[],
+  };
 };
 
 // Add new project
 export const addUserProject = async (newProject: UserProject) => {
-  const docRef = doc(db, "userProfile", "projects");
-  const cleanedProject = removeUndefined(newProject);
+  const { error } = await supabase.from("user_projects").insert({
+    id: newProject.id,
+    title: newProject.title,
+    description: newProject.description,
+    image: newProject.image,
+    month: newProject.month,
+    year: newProject.year,
+    technologies: newProject.technologies,
+    github_url: newProject.githubUrl,
+  });
 
-  await setDoc(
-    docRef,
-    {
-      items: arrayUnion(cleanedProject),
-    },
-    { merge: true }
-  );
+  if (error) throw error;
 };
 
 // Delete project
 export const deleteUserProject = async (projectToDelete: UserProject) => {
-  const docRef = doc(db, "userProfile", "projects");
+  const { error } = await supabase
+    .from("user_projects")
+    .delete()
+    .eq("id", projectToDelete.id);
 
-  await updateDoc(docRef, {
-    items: arrayRemove(projectToDelete),
-  });
+  if (error) throw error;
 };
 
 // Update project
 export const updateUserProject = async (
   oldProject: UserProject,
-  updatedProject: UserProject
+  updatedProject: UserProject,
 ) => {
-  const docRef = doc(db, "userProfile", "projects");
-  const cleanedProject = removeUndefined(updatedProject);
+  const { error } = await supabase
+    .from("user_projects")
+    .update({
+      title: updatedProject.title,
+      description: updatedProject.description,
+      image: updatedProject.image,
+      month: updatedProject.month,
+      year: updatedProject.year,
+      technologies: updatedProject.technologies,
+      github_url: updatedProject.githubUrl,
+    })
+    .eq("id", oldProject.id);
 
-  // Remove old project and add updated one
-  await updateDoc(docRef, {
-    items: arrayRemove(oldProject),
-  });
-
-  await updateDoc(docRef, {
-    items: arrayUnion(cleanedProject),
-  });
+  if (error) throw error;
 };

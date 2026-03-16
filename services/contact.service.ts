@@ -1,42 +1,40 @@
-import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { UserContact } from "@/types/index";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  getDocs,
-  query,
-  orderBy,
-} from "firebase/firestore";
 
 // Add new contact message
 export const addContactMessage = async (
   contactData: Omit<UserContact, "id">,
 ) => {
-  const contactsRef = collection(db, "contacts");
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({
+      name: contactData.name,
+      email: contactData.email,
+      subject: contactData.subject,
+      message: contactData.message,
+    })
+    .select("id")
+    .single();
 
-  const docRef = await addDoc(contactsRef, {
-    ...contactData,
-    createdAt: serverTimestamp(),
-  });
+  if (error) throw error;
 
-  return docRef.id;
+  return data.id;
 };
 
 // Get all contact messages
 export const getContactMessages = async (): Promise<UserContact[]> => {
-  const contactsRef = collection(db, "contacts");
-  const q = query(contactsRef, orderBy("createdAt", "desc"));
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  const querySnapshot = await getDocs(q);
+  if (error) return [];
 
-  const contacts: UserContact[] = [];
-  querySnapshot.forEach((doc) => {
-    contacts.push({
-      id: doc.id,
-      ...doc.data(),
-    } as UserContact);
-  });
-
-  return contacts;
+  return (data || []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    subject: row.subject,
+    message: row.message,
+  })) as UserContact[];
 };

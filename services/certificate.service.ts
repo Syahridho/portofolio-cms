@@ -1,38 +1,21 @@
-import { db } from "@/lib/firebase";
-import { storage } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { UserCertificate } from "@/types/index";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-} from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-// Helper function to remove undefined values from objects
-const removeUndefined = <T extends Record<string, any>>(obj: T): T => {
-  const cleaned = { ...obj };
-  Object.keys(cleaned).forEach((key) => {
-    if (cleaned[key] === undefined) {
-      delete cleaned[key];
-    }
-  });
-  return cleaned;
-};
-
-// Upload certificate image to Firebase Storage
+// Upload certificate image to Supabase Storage
 export const uploadCertificateImage = async (file: File): Promise<string> => {
   try {
-    const fileName = `certificates/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, fileName);
+    const fileName = `${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage
+      .from("certificates")
+      .upload(fileName, file);
 
-    const snapshot = await uploadBytes(storageRef, file);
+    if (error) throw error;
 
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("certificates").getPublicUrl(fileName);
 
-    return downloadURL;
+    return publicUrl;
   } catch (error) {
     console.error("Error uploading certificate image: ", error);
     throw error;
@@ -43,39 +26,50 @@ export const uploadCertificateImage = async (file: File): Promise<string> => {
 export const getUserCertificates = async (): Promise<{
   items: UserCertificate[];
 } | null> => {
-  const docRef = doc(db, "userProfile", "certificates");
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    return { items: data.items || [] };
-  } else {
-    return { items: [] };
-  }
+  const { data, error } = await supabase
+    .from("user_certificates")
+    .select("*");
+
+  if (error) return { items: [] };
+
+  return {
+    items: (data || []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      issuer: row.issuer,
+      month: row.month,
+      year: row.year,
+      image: row.image,
+      credentialUrl: row.credential_url,
+    })) as UserCertificate[],
+  };
 };
 
 // Add new certificate
 export const addUserCertificate = async (newCertificate: UserCertificate) => {
-  const docRef = doc(db, "userProfile", "certificates");
-  const cleanedCertificate = removeUndefined(newCertificate);
+  const { error } = await supabase.from("user_certificates").insert({
+    id: newCertificate.id,
+    name: newCertificate.name,
+    issuer: newCertificate.issuer,
+    month: newCertificate.month,
+    year: newCertificate.year,
+    image: newCertificate.image,
+    credential_url: newCertificate.credentialUrl,
+  });
 
-  await setDoc(
-    docRef,
-    {
-      items: arrayUnion(cleanedCertificate),
-    },
-    { merge: true },
-  );
+  if (error) throw error;
 };
 
 // Delete certificate
 export const deleteUserCertificate = async (
   certificateToDelete: UserCertificate,
 ) => {
-  const docRef = doc(db, "userProfile", "certificates");
+  const { error } = await supabase
+    .from("user_certificates")
+    .delete()
+    .eq("id", certificateToDelete.id);
 
-  await updateDoc(docRef, {
-    items: arrayRemove(certificateToDelete),
-  });
+  if (error) throw error;
 };
 
 // Update certificate
@@ -83,15 +77,17 @@ export const updateUserCertificate = async (
   oldCertificate: UserCertificate,
   updatedCertificate: UserCertificate,
 ) => {
-  const docRef = doc(db, "userProfile", "certificates");
-  const cleanedCertificate = removeUndefined(updatedCertificate);
+  const { error } = await supabase
+    .from("user_certificates")
+    .update({
+      name: updatedCertificate.name,
+      issuer: updatedCertificate.issuer,
+      month: updatedCertificate.month,
+      year: updatedCertificate.year,
+      image: updatedCertificate.image,
+      credential_url: updatedCertificate.credentialUrl,
+    })
+    .eq("id", oldCertificate.id);
 
-  // Remove old certificate and add updated one
-  await updateDoc(docRef, {
-    items: arrayRemove(oldCertificate),
-  });
-
-  await updateDoc(docRef, {
-    items: arrayUnion(cleanedCertificate),
-  });
+  if (error) throw error;
 };
