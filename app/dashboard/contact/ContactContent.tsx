@@ -117,7 +117,7 @@ export default function ContactContent() {
                 </div>
 
                 {/* Table with Skeleton Loading */}
-                <div className="rounded-md border bg-card">
+                <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>

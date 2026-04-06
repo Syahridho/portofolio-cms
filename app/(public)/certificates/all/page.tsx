@@ -137,7 +137,7 @@ export default function AllCertificatesPage() {
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
       <div className="space-y-4">
-        <div className="flex flex-col sm:items-start justify-between gap-4">
+        <div className="flex flex-col sm:items-start  justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" asChild className="h-8 w-8">
@@ -152,7 +152,7 @@ export default function AllCertificatesPage() {
             <p className="text-muted-foreground">{t.certificates.subtitle}</p>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="w-full flex items-center justify-between gap-2">
             <label className="text-sm font-medium whitespace-nowrap">
               {t.certificates.filterByRole}:
             </label>

@@ -65,7 +65,7 @@ export default function HomePage() {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight">
                 {t.home.greeting}{" "}
-                <TextHighlight color={locale === "id" ? "#e94c71" : "#a7f3d0"}>
+                <TextHighlight color={"#e94c71"}>
                   {profile?.name || "User"}
                 </TextHighlight>
               </h1>
