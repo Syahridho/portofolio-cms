@@ -88,27 +88,9 @@ export function ProjectsList({ projects }: ProjectsListProps) {
                     </div>
                   )}
                 </div>
-                <CardHeader>
-                  <div className="flex justify-between items-center gap-2 pt-4">
-                    <CardTitle className="text-xl">{project.title}</CardTitle>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {/* Format date simply */}
-                      {project.month}/{project.year}
-                    </span>
-                  </div>
-                  <CardDescription className="line-clamp-2">
-                    {project.description}
-                  </CardDescription>
+                <CardHeader className="pt-4">
+                  <CardTitle>{project.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 pt-2">
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.map((tech, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
               </Link>
               <CardFooter className="flex gap-2 pt-0">
                 {project.liveUrl && (

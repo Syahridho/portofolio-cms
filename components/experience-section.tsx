@@ -51,9 +51,9 @@ export const ExperienceItem = ({
       }}
     >
       <div className="block cursor-pointer" onClick={toggleExpand}>
-        <div className="rounded-lg bg-card text-card-foreground flex">
+        <div className="rounded-lg text-card-foreground flex">
           <div className="flex-none">
-            <span className="relative flex shrink-0 overflow-hidden rounded-full border size-12 m-auto bg-muted-background dark:bg-foreground">
+            <span className="relative flex shrink-0 overflow-hidden rounded-full border size-12 m-auto bg-muted-background">
               {data.image ? (
                 <img
                   className="aspect-square h-full w-full object-contain"

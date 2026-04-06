@@ -14,19 +14,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useLocale } from "@/lib/i18n-simple";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useCertificates } from "@/hooks/use-certificate";
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AllCertificatesPage() {
   const { t } = useLocale();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading } = useCertificates();
 
-  // Map UserCertificate to UI format using real category from DB
   const certificates = useMemo(
     () =>
       (data?.items || []).map((cert) => {
@@ -47,7 +58,6 @@ export default function AllCertificatesPage() {
     [data],
   );
 
-  // Build category list with counts from actual data
   const categoryOptions = useMemo(() => {
     const counts: Record<string, number> = {};
     certificates.forEach((cert) => {
@@ -65,10 +75,54 @@ export default function AllCertificatesPage() {
     ];
   }, [certificates, t]);
 
-  const filteredCertificates = certificates.filter((cert) => {
-    if (selectedCategory === "all") return true;
-    return cert.category === selectedCategory;
-  });
+  const filteredCertificates = useMemo(
+    () =>
+      certificates.filter((cert) => {
+        if (selectedCategory === "all") return true;
+        return cert.category === selectedCategory;
+      }),
+    [certificates, selectedCategory],
+  );
+
+  // Reset ke halaman 1 setiap kali filter berubah
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    setCurrentPage(1);
+  };
+
+  const totalPages = Math.ceil(filteredCertificates.length / ITEMS_PER_PAGE);
+
+  const paginatedCertificates = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredCertificates.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredCertificates, currentPage]);
+
+  // Generate page numbers dengan ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | "ellipsis")[] = [];
+
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    pages.push(1);
+
+    if (currentPage > 3) pages.push("ellipsis");
+
+    for (
+      let i = Math.max(2, currentPage - 1);
+      i <= Math.min(totalPages - 1, currentPage + 1);
+      i++
+    ) {
+      pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) pages.push("ellipsis");
+
+    pages.push(totalPages);
+
+    return pages;
+  };
 
   const openModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -83,7 +137,7 @@ export default function AllCertificatesPage() {
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:items-start justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" asChild className="h-8 w-8">
@@ -98,13 +152,13 @@ export default function AllCertificatesPage() {
             <p className="text-muted-foreground">{t.certificates.subtitle}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
             <label className="text-sm font-medium whitespace-nowrap">
               {t.certificates.filterByRole}:
             </label>
             <Select
               value={selectedCategory}
-              onValueChange={(value) => setSelectedCategory(value)}
+              onValueChange={handleCategoryChange}
             >
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder={t.certificates.roleAll} />
@@ -123,7 +177,7 @@ export default function AllCertificatesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading
-          ? Array.from({ length: 6 }).map((_, i) => (
+          ? Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <div className="aspect-video w-full overflow-hidden bg-muted">
                   <Skeleton className="w-full h-full" />
@@ -134,7 +188,7 @@ export default function AllCertificatesPage() {
                 </div>
               </Card>
             ))
-          : filteredCertificates.map((cert) => (
+          : paginatedCertificates.map((cert) => (
               <div
                 key={cert.id}
                 className="group relative cursor-pointer overflow-hidden rounded-lg"
@@ -162,13 +216,74 @@ export default function AllCertificatesPage() {
             ))}
       </div>
 
+      {/* Pagination */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex flex-col items-center gap-2">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  aria-disabled={currentPage === 1}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+
+              {getPageNumbers().map((page, idx) =>
+                page === "ellipsis" ? (
+                  <PaginationItem key={`ellipsis-${idx}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={currentPage === page}
+                      onClick={() => setCurrentPage(page)}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  aria-disabled={currentPage === totalPages}
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+
+          <p className="text-xs text-muted-foreground">
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+            {Math.min(
+              currentPage * ITEMS_PER_PAGE,
+              filteredCertificates.length,
+            )}{" "}
+            of {filteredCertificates.length} certificates
+          </p>
+        </div>
+      )}
+
       {/* Modal for certificate preview */}
       <Dialog open={isModalOpen} onOpenChange={closeModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden border-none">
           <VisuallyHidden>
             <DialogTitle>Certificate preview</DialogTitle>
           </VisuallyHidden>
-          {/* Hide the default close button */}
           <style jsx global>{`
             [data-radix-dialog-content] button[aria-label="Close"] {
               display: none !important;

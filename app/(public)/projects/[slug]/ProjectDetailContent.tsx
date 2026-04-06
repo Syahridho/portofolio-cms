@@ -63,7 +63,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
           <h2 className="text-xl font-semibold mb-4">
             {t.projects.description}
           </h2>
-          <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-lg">
+          <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {project.description}
           </p>
         </div>

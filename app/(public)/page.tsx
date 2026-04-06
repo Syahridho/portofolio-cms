@@ -65,7 +65,7 @@ export default function HomePage() {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight">
                 {t.home.greeting}{" "}
-                <TextHighlight color={locale === "id" ? "#ffd1dc" : "#a7f3d0"}>
+                <TextHighlight color={locale === "id" ? "#e94c71" : "#a7f3d0"}>
                   {profile?.name || "User"}
                 </TextHighlight>
               </h1>
@@ -97,6 +97,7 @@ export default function HomePage() {
                       <a
                         href={cv.fileUrl}
                         download={cv.fileName}
+                        target="__blank"
                         className="cursor-pointer flex items-center gap-2"
                       >
                         <IconDownload size={16} />
@@ -178,7 +179,7 @@ export default function HomePage() {
                 {skills
                   .slice(
                     Math.ceil(skills.length / 3),
-                    Math.ceil((skills.length / 3) * 2)
+                    Math.ceil((skills.length / 3) * 2),
                   )
                   .map((skill) => (
                     <TechBadge
