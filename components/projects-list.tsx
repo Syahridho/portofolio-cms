@@ -20,7 +20,7 @@ import {
   PaginationNext,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { IconBrandGithub, IconWorld } from "@tabler/icons-react";
+import { IconBrandGithub, IconBrandFigma, IconWorld } from "@tabler/icons-react";
 import { ProjectItem } from "@/lib/project-data";
 import { generateProjectSlug } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n-simple";
@@ -96,34 +96,51 @@ export function ProjectsList({ projects }: ProjectsListProps) {
                 {project.liveUrl && (
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
                     asChild
-                    className="flex-1"
                   >
                     <a
                       href={project.liveUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      title={t.projects.demo}
+                      aria-label={t.projects.demo}
                     >
-                      <IconWorld size={16} className="mr-2" />
-                      {t.projects.demo}
+                      <IconWorld size={18} />
                     </a>
                   </Button>
                 )}
                 {project.githubUrl && (
                   <Button
                     variant="default"
-                    size="sm"
+                    size="icon"
                     asChild
-                    className="flex-1"
                   >
                     <a
                       href={project.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      title={t.projects.code}
+                      aria-label={t.projects.code}
                     >
-                      <IconBrandGithub size={16} className="mr-2" />
-                      {t.projects.code}
+                      <IconBrandGithub size={18} />
+                    </a>
+                  </Button>
+                )}
+                {project.figmaUrl && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    asChild
+                  >
+                    <a
+                      href={project.figmaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Figma"
+                      aria-label="Figma"
+                    >
+                      <IconBrandFigma size={18} />
                     </a>
                   </Button>
                 )}

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconBrandGithub, IconCalendar, IconExternalLink } from "@tabler/icons-react";
+import { IconBrandGithub, IconBrandFigma, IconCalendar, IconExternalLink } from "@tabler/icons-react";
 import { UserProject } from "@/types";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -90,7 +90,7 @@ export function ProjectDetailDialog({
           </div>
 
           {/* Links */}
-          {(project.githubUrl || project.liveDemoUrl) && (
+          {(project.githubUrl || project.liveDemoUrl || project.figmaUrl) && (
             <div className="space-y-3">
               <h3 className="font-semibold text-lg">Tautan Eksternal</h3>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -112,6 +112,16 @@ export function ProjectDetailDialog({
                   >
                     <IconExternalLink className="mr-2 h-4 w-4" />
                     Live Demo
+                  </Button>
+                )}
+                {project.figmaUrl && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => window.open(project.figmaUrl, "_blank")}
+                  >
+                    <IconBrandFigma className="mr-2 h-4 w-4" />
+                    Figma
                   </Button>
                 )}
               </div>

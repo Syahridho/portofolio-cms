@@ -29,6 +29,8 @@ async function getProjectItems(): Promise<ProjectItem[]> {
     year: p.year,
     technologies: p.technologies,
     githubUrl: p.githubUrl,
+    liveUrl: p.liveDemoUrl,
+    figmaUrl: p.figmaUrl,
   }));
 }
 

@@ -134,6 +134,11 @@ export const userProjectSchema = z.object({
     .url("Live Demo URL harus valid")
     .optional()
     .or(z.literal("")),
+  figmaUrl: z
+    .string()
+    .url("Figma URL harus valid")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const userCertificateSchema = z.object({

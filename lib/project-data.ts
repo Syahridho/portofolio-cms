@@ -8,6 +8,7 @@ export interface ProjectItem {
   technologies: string[];
   liveUrl?: string;
   githubUrl?: string;
+  figmaUrl?: string;
 }
 
 export const initialProjects: ProjectItem[] = [

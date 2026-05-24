@@ -74,7 +74,8 @@ CREATE TABLE user_projects (
   year INT NOT NULL,
   technologies TEXT[] DEFAULT '{}',
   github_url TEXT,
-  live_demo TEXT
+  live_demo TEXT,
+  figma_url TEXT
 );
 
 -- Certificates (replaces Firestore userProfile/certificates → items array)

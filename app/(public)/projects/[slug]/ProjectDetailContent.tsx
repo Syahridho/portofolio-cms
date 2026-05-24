@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconBrandGithub, IconWorld, IconArrowLeft } from "@tabler/icons-react";
+import { IconBrandGithub, IconBrandFigma, IconWorld, IconArrowLeft } from "@tabler/icons-react";
 import { ProjectItem } from "@/lib/project-data";
 import { useLocale } from "@/lib/i18n-simple";
 import Link from "next/link";
@@ -106,7 +106,19 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
               </a>
             </Button>
           )}
-          {!project.liveUrl && !project.githubUrl && (
+          {project.figmaUrl && (
+            <Button asChild variant="outline" size="lg" className="flex-1">
+              <a
+                href={project.figmaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <IconBrandFigma className="mr-2 h-5 w-5" />
+                Figma
+              </a>
+            </Button>
+          )}
+          {!project.liveUrl && !project.githubUrl && !project.figmaUrl && (
             <p className="text-muted-foreground italic w-full text-center">
               {t.projects.noLinks}
             </p>

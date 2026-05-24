@@ -48,6 +48,7 @@ interface EditCertificateDialogProps {
   onOpenChange: (open: boolean) => void;
   certificate?: UserCertificate | null;
   mode: "add" | "edit";
+  starCount?: number;
 }
 
 const MONTHS = [
@@ -84,6 +85,7 @@ export function EditCertificateDialog({
   onOpenChange,
   certificate,
   mode,
+  starCount = 0,
 }: EditCertificateDialogProps) {
   const { mutate: addCertificate, isPending: isAdding } = useAddCertificate();
   const { mutate: updateCertificate, isPending: isUpdating } =
@@ -182,7 +184,14 @@ export function EditCertificateDialog({
         month: values.month,
         year: values.year,
         category: values.category || "Other",
-        isStar: values.isStar || false,
+        // Guard: if adding new starred and limit already hit, silently unstar
+        isStar:
+          values.isStar &&
+          !(starCount >= 5 && !certificate?.isStar)
+            ? true
+            : (certificate?.isStar ?? false) && values.isStar
+              ? true
+              : false,
       };
 
       // Only add optional fields if they have values
@@ -473,22 +482,47 @@ export function EditCertificateDialog({
             <FormField
               control={form.control}
               name="isStar"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel>Tampilkan di Halaman Utama</FormLabel>
-                    <p className="text-xs text-muted-foreground">
-                      Aktifkan untuk menampilkan sertifikat ini di halaman publik (maks. 6)
-                    </p>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const isCurrentlyStar = certificate?.isStar ?? false;
+                const limitReached = starCount >= 5;
+                // Can always turn OFF; can only turn ON if below limit or already starred
+                const switchDisabled = limitReached && !isCurrentlyStar && !field.value;
+
+                return (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Tampilkan di Halaman Utama</FormLabel>
+                        <span
+                          className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                            limitReached
+                              ? "bg-destructive/10 text-destructive"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {starCount}/{5} slot
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {limitReached && !isCurrentlyStar
+                          ? "Slot penuh. Nonaktifkan sertifikat lain dulu."
+                          : "Aktifkan untuk menampilkan sertifikat di halaman publik (maks. 5)"}
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(val) => {
+                          if (val && limitReached && !isCurrentlyStar) return;
+                          field.onChange(val);
+                        }}
+                        disabled={switchDisabled}
+                        aria-label="Tampilkan di halaman utama"
+                      />
+                    </FormControl>
+                  </FormItem>
+                );
+              }}
             />
 
             <DialogFooter>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -19,6 +19,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   IconPlus,
   IconSearch,
   IconPencil,
@@ -28,17 +43,37 @@ import {
   IconStarFilled,
 } from "@tabler/icons-react";
 import { UserCertificate } from "@/types";
-import { useCertificates, useDeleteCertificate } from "@/hooks/use-certificate";
+import {
+  useCertificatesPaginated,
+  useDeleteCertificate,
+  useStarCount,
+  useToggleStar,
+} from "@/hooks/use-certificate";
 import { EditCertificateDialog } from "@/components/edit-certificate-dialog";
 import { useI18n } from "@/hooks/use-i18n";
+import { MAX_STAR, PAGE_SIZE } from "@/services/certificate.service";
 
 export default function Page() {
-  const { data, isLoading } = useCertificates();
-  const { mutate: deleteCertificate, isPending: isDeleting } =
-    useDeleteCertificate();
   const { getContent } = useI18n();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 whenever search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const { data, isLoading, isFetching } = useCertificatesPaginated({
+    page: currentPage,
+    search: searchQuery,
+  });
+  const { data: starCount = 0 } = useStarCount();
+  const { mutate: toggleStar, isPending: isTogglingstar } = useToggleStar();
+  const { mutate: deleteCertificate, isPending: isDeleting } =
+    useDeleteCertificate();
+
+  const starSlotFull = starCount >= MAX_STAR;
 
   // Dialog states
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -48,11 +83,8 @@ export default function Page() {
     useState<UserCertificate | null>(null);
 
   const certificates = data?.items || [];
-
-  // Filter certificates based on search
-  const filteredCertificates = certificates.filter((c) =>
-    getContent(c.name).toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const handleDeleteCertificate = () => {
     if (selectedCertificate) {
@@ -60,6 +92,10 @@ export default function Page() {
         onSuccess: () => {
           setIsDeleteOpen(false);
           setSelectedCertificate(null);
+          // If last item on page > 1, go back
+          if (certificates.length === 1 && currentPage > 1) {
+            setCurrentPage((p) => p - 1);
+          }
         },
       });
     }
@@ -76,31 +112,31 @@ export default function Page() {
   };
 
   const breadcrumbs = [
-    {
-      title: "Dashboard",
-      href: "/dashboard",
-    },
-    {
-      title: "Sertifikat",
-      href: "/dashboard/certificates",
-    },
+    { title: "Dashboard", href: "/dashboard" },
+    { title: "Sertifikat", href: "/dashboard/certificates" },
   ];
 
   const months = [
     "",
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "Mei",
-    "Jun",
-    "Jul",
-    "Agu",
-    "Sep",
-    "Okt",
-    "Nov",
-    "Des",
+    "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+    "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
   ];
+
+  // Build visible page numbers (max 5 shown)
+  const getPageNumbers = () => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (currentPage <= 3) return [1, 2, 3, 4, 5];
+    if (currentPage >= totalPages - 2)
+      return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+  };
+
+  const pageNumbers = getPageNumbers();
+  const showStartEllipsis = totalPages > 5 && pageNumbers[0] > 1;
+  const showEndEllipsis = totalPages > 5 && pageNumbers[pageNumbers.length - 1] < totalPages;
+
+  const startItem = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const endItem = Math.min(currentPage * PAGE_SIZE, total);
 
   return (
     <SidebarProvider
@@ -118,6 +154,7 @@ export default function Page() {
           <div className="@container/main flex flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 px-4 lg:px-6 md:gap-6 md:py-6">
               <div className="flex flex-col gap-4">
+                {/* Header */}
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-2xl font-bold tracking-tight">
@@ -133,7 +170,8 @@ export default function Page() {
                   </Button>
                 </div>
 
-                <div className="flex items-center py-4">
+                {/* Search + Count + Star Slot Badge */}
+                <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="relative w-full max-w-sm">
                     <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -143,14 +181,34 @@ export default function Page() {
                       className="pl-8"
                     />
                   </div>
+                  <div className="flex items-center gap-3">
+                    {!isLoading && (
+                      <p className="text-sm text-muted-foreground shrink-0">
+                        {total > 0
+                          ? `Menampilkan ${startItem}–${endItem} dari ${total} sertifikat`
+                          : "Tidak ada sertifikat"}
+                      </p>
+                    )}
+                    <Badge
+                      variant={starSlotFull ? "destructive" : "secondary"}
+                      className="shrink-0 gap-1"
+                    >
+                      <IconStarFilled className="h-3 w-3" />
+                      {starCount}/{MAX_STAR} slot
+                      {starSlotFull ? " penuh" : " terisi"}
+                    </Badge>
+                  </div>
                 </div>
 
-                {/* Grid with Skeleton Loading */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {/* Grid */}
+                <div
+                  className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 transition-opacity duration-200 ${
+                    isFetching && !isLoading ? "opacity-60" : "opacity-100"
+                  }`}
+                >
                   {isLoading ? (
-                    // Skeleton Loading
                     <>
-                      {[...Array(8)].map((_, i) => (
+                      {[...Array(PAGE_SIZE)].map((_, i) => (
                         <div
                           key={i}
                           className="flex flex-col gap-2 rounded-lg border bg-card overflow-hidden"
@@ -164,13 +222,13 @@ export default function Page() {
                         </div>
                       ))}
                     </>
-                  ) : filteredCertificates.length > 0 ? (
-                    filteredCertificates.map((cert) => (
+                  ) : certificates.length > 0 ? (
+                    certificates.map((cert) => (
                       <div
                         key={cert.id}
                         className="group relative flex flex-col gap-2 rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
                       >
-                        {/* Image Container with Hover Effects */}
+                        {/* Image with hover actions */}
                         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                           {cert.image ? (
                             <img
@@ -183,8 +241,6 @@ export default function Page() {
                               No Image
                             </div>
                           )}
-
-                          {/* Hover Actions - Center */}
                           <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <Button
                               variant="secondary"
@@ -205,9 +261,47 @@ export default function Page() {
                               Hapus
                             </Button>
                           </div>
+                          {/* Quick star toggle — top-right corner */}
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() =>
+                                    toggleStar({ cert, value: !cert.isStar })
+                                  }
+                                  disabled={
+                                    isTogglingstar ||
+                                    (starSlotFull && !cert.isStar)
+                                  }
+                                  className={`absolute top-2 right-2 z-10 p-1.5 rounded-full transition-all
+                                    ${
+                                      cert.isStar
+                                        ? "bg-yellow-500/90 text-white hover:bg-yellow-400"
+                                        : starSlotFull
+                                          ? "bg-muted/60 text-muted-foreground cursor-not-allowed opacity-50"
+                                          : "bg-black/40 text-white/70 hover:bg-black/60 hover:text-yellow-400"
+                                    }`}
+                                  aria-label={cert.isStar ? "Hapus dari halaman utama" : "Tampilkan di halaman utama"}
+                                >
+                                  {cert.isStar ? (
+                                    <IconStarFilled className="h-3.5 w-3.5" />
+                                  ) : (
+                                    <IconStar className="h-3.5 w-3.5" />
+                                  )}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="text-xs">
+                                {cert.isStar
+                                  ? "Hapus dari halaman utama"
+                                  : starSlotFull
+                                    ? `Slot penuh (${MAX_STAR}/${MAX_STAR})`
+                                    : "Tampilkan di halaman utama"}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
 
-                        {/* Content Info */}
+                        {/* Info */}
                         <div className="p-4 pt-2 flex flex-col gap-1">
                           <div className="flex items-center gap-1.5">
                             {cert.isStar && (
@@ -228,7 +322,10 @@ export default function Page() {
                               {months[cert.month]} {cert.year}
                             </p>
                             {cert.category && cert.category !== "Other" && (
-                              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1 py-0 h-4"
+                              >
                                 {cert.category}
                               </Badge>
                             )}
@@ -255,6 +352,92 @@ export default function Page() {
                     </div>
                   )}
                 </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      Halaman {currentPage} dari {totalPages}
+                    </p>
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                            }
+                            aria-disabled={currentPage === 1}
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+
+                        {showStartEllipsis && (
+                          <>
+                            <PaginationItem>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(1)}
+                                className="cursor-pointer"
+                              >
+                                1
+                              </PaginationLink>
+                            </PaginationItem>
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          </>
+                        )}
+
+                        {pageNumbers.map((page) => (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(page)}
+                              isActive={currentPage === page}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        {showEndEllipsis && (
+                          <>
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                            <PaginationItem>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(totalPages)}
+                                className="cursor-pointer"
+                              >
+                                {totalPages}
+                              </PaginationLink>
+                            </PaginationItem>
+                          </>
+                        )}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              setCurrentPage((p) =>
+                                Math.min(totalPages, p + 1),
+                              )
+                            }
+                            aria-disabled={currentPage === totalPages}
+                            className={
+                              currentPage === totalPages
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -266,6 +449,7 @@ export default function Page() {
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
         mode="add"
+        starCount={starCount}
       />
 
       <EditCertificateDialog
@@ -273,6 +457,7 @@ export default function Page() {
         onOpenChange={setIsEditOpen}
         certificate={selectedCertificate}
         mode="edit"
+        starCount={starCount}
       />
 
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>

@@ -22,6 +22,41 @@ export const uploadCertificateImage = async (file: File): Promise<string> => {
   }
 };
 
+export const MAX_STAR = 5;
+
+// Get the current count of starred (featured) certificates
+export const getStarCertificateCount = async (): Promise<number> => {
+  const { count, error } = await supabase
+    .from("user_certificates")
+    .select("*", { count: "exact", head: true })
+    .eq("is_star", true);
+
+  if (error) return 0;
+  return count ?? 0;
+};
+
+// Toggle is_star with a MAX_STAR cap enforced before updating
+export const toggleStarCertificate = async (
+  cert: UserCertificate,
+  newValue: boolean,
+): Promise<void> => {
+  if (newValue) {
+    const current = await getStarCertificateCount();
+    if (current >= MAX_STAR) {
+      throw new Error(
+        `Maksimal ${MAX_STAR} sertifikat yang dapat ditampilkan di halaman utama`,
+      );
+    }
+  }
+
+  const { error } = await supabase
+    .from("user_certificates")
+    .update({ is_star: newValue })
+    .eq("id", cert.id);
+
+  if (error) throw error;
+};
+
 // Get all user certificates
 export const getUserCertificates = async (): Promise<{
   items: UserCertificate[];
@@ -33,6 +68,51 @@ export const getUserCertificates = async (): Promise<{
   if (error) return { items: [] };
 
   return {
+    items: (data || []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      issuer: row.issuer,
+      month: row.month,
+      year: row.year,
+      image: row.image,
+      credentialUrl: row.credential_url,
+      category: row.category || "Other",
+      isStar: row.is_star || false,
+    })) as UserCertificate[],
+  };
+};
+
+export const PAGE_SIZE = 12;
+
+// Get paginated certificates with optional search (server-side)
+export const getUserCertificatesPaginated = async ({
+  page,
+  search,
+}: {
+  page: number;
+  search: string;
+}): Promise<{ items: UserCertificate[]; total: number }> => {
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  let query = supabase
+    .from("user_certificates")
+    .select("*", { count: "exact" })
+    .order("year", { ascending: false })
+    .order("month", { ascending: false })
+    .range(from, to);
+
+  // Server-side search on issuer (text) — name is JSONB, filter client-side
+  if (search.trim()) {
+    query = query.ilike("issuer", `%${search.trim()}%`);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) return { items: [], total: 0 };
+
+  return {
+    total: count ?? 0,
     items: (data || []).map((row) => ({
       id: row.id,
       name: row.name,

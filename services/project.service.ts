@@ -41,6 +41,9 @@ export const getUserProjects = async (): Promise<{
       technologies: row.technologies,
       githubUrl: row.github_url,
       liveDemoUrl: row.live_demo,
+      figmaUrl: row.figma_url ?? null,
+      // Alias for public ProjectItem pages
+      liveUrl: row.live_demo,
     })) as UserProject[],
   };
 };
@@ -57,6 +60,8 @@ export const addUserProject = async (newProject: UserProject) => {
     technologies: newProject.technologies,
     github_url: newProject.githubUrl,
     live_demo: newProject.liveDemoUrl,
+    // Only include figma_url if it has a value (column may not exist yet)
+    ...(newProject.figmaUrl ? { figma_url: newProject.figmaUrl } : {}),
   });
 
   if (error) throw error;
@@ -88,6 +93,8 @@ export const updateUserProject = async (
       technologies: updatedProject.technologies,
       github_url: updatedProject.githubUrl,
       live_demo: updatedProject.liveDemoUrl,
+      // Only include figma_url if it has a value (column may not exist yet)
+      ...(updatedProject.figmaUrl ? { figma_url: updatedProject.figmaUrl } : {}),
     })
     .eq("id", oldProject.id);
 

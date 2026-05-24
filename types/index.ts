@@ -76,6 +76,7 @@ export interface UserProject {
   technologies: string[];
   githubUrl: string;
   liveDemoUrl?: string;
+  figmaUrl?: string;
 }
 
 export interface UserCertificate {

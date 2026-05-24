@@ -6,6 +6,7 @@ import { ProjectItem } from "@/lib/project-data";
 
 export default function ProjectsPage() {
   const { data, isLoading } = useProjects();
+  console.log(data);
 
   const projects: ProjectItem[] = (data?.items || []).map((p) => ({
     id: p.id,
@@ -19,6 +20,8 @@ export default function ProjectsPage() {
     year: p.year,
     technologies: p.technologies,
     githubUrl: p.githubUrl,
+    liveUrl: p.liveDemoUrl,
+    figmaUrl: p.figmaUrl,
   }));
 
   if (isLoading) {

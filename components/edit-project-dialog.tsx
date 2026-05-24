@@ -96,6 +96,7 @@ export function EditProjectDialog({
       technologies: [],
       githubUrl: "",
       liveDemoUrl: "",
+      figmaUrl: "",
     },
   });
 
@@ -125,6 +126,7 @@ export function EditProjectDialog({
         technologies: project.technologies,
         githubUrl: project.githubUrl || "",
         liveDemoUrl: project.liveDemoUrl || "",
+        figmaUrl: project.figmaUrl || "",
       });
       setTechnologies(project.technologies);
       if (project.image) {
@@ -199,6 +201,7 @@ export function EditProjectDialog({
         image: imageUrl,
         githubUrl: values.githubUrl || "",
         liveDemoUrl: values.liveDemoUrl || "",
+        figmaUrl: values.figmaUrl || "",
       };
 
       if (mode === "edit" && project) {
@@ -246,6 +249,7 @@ export function EditProjectDialog({
       technologies: [],
       githubUrl: "",
       liveDemoUrl: "",
+      figmaUrl: "",
     });
     setImagePreview(null);
     setImageFile(null);
@@ -479,6 +483,23 @@ export function EditProjectDialog({
                     <FormControl>
                       <Input
                         placeholder="https://example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="figmaUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Figma URL (Opsional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://www.figma.com/file/..."
                         {...field}
                       />
                     </FormControl>

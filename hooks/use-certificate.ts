@@ -2,6 +2,9 @@ import {
   addUserCertificate,
   deleteUserCertificate,
   getUserCertificates,
+  getUserCertificatesPaginated,
+  getStarCertificateCount,
+  toggleStarCertificate,
   updateUserCertificate,
 } from "@/services/certificate.service";
 import { UserCertificate } from "@/types";
@@ -15,6 +18,45 @@ export const useCertificates = () => {
   });
 };
 
+export const useCertificatesPaginated = ({
+  page,
+  search,
+}: {
+  page: number;
+  search: string;
+}) => {
+  return useQuery({
+    queryKey: ["user-certificates-paginated", page, search],
+    queryFn: () => getUserCertificatesPaginated({ page, search }),
+    placeholderData: (prev) => prev, // keep previous data while loading next page
+  });
+};
+
+// Lightweight query — only the star count, no items
+export const useStarCount = () => {
+  return useQuery({
+    queryKey: ["user-certificates-star-count"],
+    queryFn: getStarCertificateCount,
+    staleTime: 0, // always fresh after mutations
+  });
+};
+
+export const useToggleStar = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cert, value }: { cert: UserCertificate; value: boolean }) =>
+      toggleStarCertificate(cert, value),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-certificates-paginated"] });
+      queryClient.invalidateQueries({ queryKey: ["user-certificates-star-count"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Gagal mengubah status tampilan sertifikat");
+    },
+  });
+};
+
 export const useAddCertificate = () => {
   const queryClient = useQueryClient();
 
@@ -22,6 +64,7 @@ export const useAddCertificate = () => {
     mutationFn: (newData: UserCertificate) => addUserCertificate(newData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["user-certificates-paginated"] });
       toast.success("Sertifikat berhasil ditambahkan");
     },
     onError: (error) => {
@@ -39,6 +82,7 @@ export const useDeleteCertificate = () => {
       deleteUserCertificate(certificateToDelete),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["user-certificates-paginated"] });
       toast.success("Sertifikat berhasil dihapus");
     },
     onError: () => {
@@ -60,6 +104,7 @@ export const useUpdateCertificate = () => {
     }) => updateUserCertificate(oldCertificate, updatedCertificate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["user-certificates-paginated"] });
       toast.success("Sertifikat berhasil diperbarui");
     },
     onError: (error) => {
