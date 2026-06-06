@@ -33,10 +33,11 @@ export function TechBadge({
           src={iconUrl}
           alt={name}
           className="w-4 h-4"
-          loading="lazy"
+          loading="eager"
           onError={() => {
             setImageError(true);
           }}
+          
         />
       )}
       <span className="font-medium">{name}</span>

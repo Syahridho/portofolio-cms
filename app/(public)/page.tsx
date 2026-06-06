@@ -32,6 +32,7 @@ import { useSkills } from "@/hooks/use-skills";
 import { useAchievements } from "@/hooks/use-achievement";
 import { useCareers } from "@/hooks/use-career";
 import { getLocalizedContent } from "@/lib/i18n-helpers";
+import { useState } from "react";
 
 export default function HomePage() {
   const { t, locale } = useLocale();
@@ -49,6 +50,7 @@ export default function HomePage() {
   const { data: cvsData } = useCVs();
 
   // Extract items from response
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const skills = skillsData?.items || [];
   const achievements = achievementsData?.items || [];
   const careers = careersData?.items || [];
@@ -126,7 +128,8 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Skills Section */}
+      
+    {/* Skills Section */}
       <section className="space-y-2 animate-in slide-in-from-bottom-4 duration-700 delay-100">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <span className="text-primary">
@@ -162,50 +165,44 @@ export default function HomePage() {
               </div>
             </div>
           ) : skills && skills.length > 0 ? (
-            <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
-              {/* First Row - Moving Right */}
-              <Marquee pauseOnHover className="[--duration:25s]">
-                {skills.slice(0, Math.ceil(skills.length / 3)).map((skill) => (
-                  <TechBadge
-                    key={skill.id}
-                    name={skill.name}
-                    slug={skill.icons}
-                  />
+            <div className="flex flex-col gap-4">
+
+              {/* Category Filter Buttons */}
+              <div className="flex flex-wrap gap-2">
+                {["All", ...Array.from(new Set(skills.map((s) => s.category)))].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                      activeCategory === cat
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-transparent text-foreground border-foreground/30 hover:border-foreground/60"
+                    }`}
+                  >
+                    {cat}
+                  </button>
                 ))}
-              </Marquee>
+              </div>
 
-              {/* Second Row - Moving Right */}
-              <Marquee pauseOnHover className="[--duration:25s]">
-                {skills
-                  .slice(
-                    Math.ceil(skills.length / 3),
-                    Math.ceil((skills.length / 3) * 2),
-                  )
-                  .map((skill) => (
-                    <TechBadge
-                      key={skill.id}
-                      name={skill.name}
-                      slug={skill.icons}
-                    />
-                  ))}
-              </Marquee>
+              {/* Skills Grid */}
+<div className="flex flex-wrap gap-2">
+  {skills.map((skill) => (
+    <div
+      key={skill.id}
+      className={
+        activeCategory === "All" || skill.category === activeCategory
+          ? undefined
+          : "hidden"
+      }
+    >
+      <TechBadge
+        name={skill.name}
+        slug={skill.icons}
+      />
+    </div>
+  ))}
+</div>
 
-              {/* Third Row - Moving Right */}
-              <Marquee pauseOnHover className="[--duration:25s]">
-                {skills
-                  .slice(Math.ceil((skills.length / 3) * 2))
-                  .map((skill) => (
-                    <TechBadge
-                      key={skill.id}
-                      name={skill.name}
-                      slug={skill.icons}
-                    />
-                  ))}
-              </Marquee>
-
-              {/* Gradient Fade Effects */}
-              <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background"></div>
-              <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background"></div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
