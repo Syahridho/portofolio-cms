@@ -13,9 +13,10 @@ export const translations = {
       contact: "Contact",
       socialMedia: "Social Media",
       downloadCV: "Download CV",
+      back: "Back",
     },
     home: {
-      greeting: "Hi, I'm",
+      greeting: "Hi there! I'm",
       role: "Programmer",
       location: "Pekanbaru, Riau, Indonesia",
       bio: "I am a Programmer with a focus on creating aesthetically pleasing and responsive user interfaces. With skills focusing on Bootstrap, Tailwind, PHP, React JS, Next JS and Laravel.",
@@ -83,6 +84,7 @@ export const translations = {
       contact: "Kontak",
       socialMedia: "Media Sosial",
       downloadCV: "Unduh CV",
+      back: "Kembali",
     },
     home: {
       greeting: "Hai, Saya",

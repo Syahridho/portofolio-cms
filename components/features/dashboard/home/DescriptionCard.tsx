@@ -47,7 +47,7 @@ export default function DescriptionCard() {
     <Card className="@container/card">
       <CardHeader className="flex-row items-start gap-4">
         <CardTitle className="text-2xl font-semibold">
-          Hi, I'm {data.name}
+          Hi there! I'm {data.name}
         </CardTitle>
         <CardDescription>{getContent(data.description)}</CardDescription>
 

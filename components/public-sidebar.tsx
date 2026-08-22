@@ -10,6 +10,7 @@ import {
   IconBrandGithub,
   IconBrandInstagram,
   IconBrandLinkedin,
+  IconBrandWhatsapp,
   IconMail,
 } from "@tabler/icons-react";
 import { useProfile } from "@/hooks/use-profile";
@@ -155,6 +156,22 @@ export function PublicSidebar() {
             {t.common.socialMedia}
           </p>
           <div className="flex justify-center gap-2">
+             {userProfile?.socials?.whatsapp && (
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <a
+                  href={userProfile?.socials?.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <IconBrandWhatsapp size={20} />
+                </a>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"

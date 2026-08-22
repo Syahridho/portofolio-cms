@@ -213,7 +213,7 @@
   },
   "home": {
     "hero": {
-      "greeting": "Hi, I'm",
+      "greeting": "Hi there! I'm ",
       "description": "A passionate developer creating amazing digital experiences",
       "downloadCV": "Download CV",
       "viewProjects": "View Projects"

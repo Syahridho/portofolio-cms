@@ -24,5 +24,6 @@ export const initialProfile: ProfileData = {
     linkedin: "https://linkedin.com/in/syahridho",
     github: "https://github.com/syahridho",
     instagram: "https://instagram.com/syahridho",
+    whatsapp: "https://wa.me/6282392251258",
   },
 };

@@ -106,7 +106,7 @@ export function EditIntroDialog({
                       <Input placeholder="Nama Lengkap" {...field} />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">
-                      Nama ini akan ditampilkan sebagai "Hi, I'm [Nama Anda]"
+                      Nama ini akan ditampilkan sebagai "Hi there! I'm [Nama Anda]"
                     </p>
                     <FormMessage />
                   </FormItem>

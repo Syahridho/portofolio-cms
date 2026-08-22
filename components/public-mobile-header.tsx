@@ -19,24 +19,28 @@ import {
   IconBrandInstagram,
   IconBrandLinkedin,
   IconMail,
+  IconBrandWhatsapp,
 } from "@tabler/icons-react";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import {useTranslations} from 'next-intl'
+import { useProfile } from "@/hooks/use-profile";
 
 export function PublicMobileHeader() {
   const [open, setOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const pathname = usePathname();
+  const t = useTranslations("common");
+  const { data: userProfile, isLoading } = useProfile();
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -58,7 +62,7 @@ export function PublicMobileHeader() {
         >
           <Avatar className="h-10 w-10">
             <AvatarImage
-              src={initialProfile.avatar}
+              src={userProfile?.photoURL || undefined} 
               alt={initialProfile.name}
             />
             <AvatarFallback className="bg-primary text-primary-foreground text-sm">
@@ -70,13 +74,10 @@ export function PublicMobileHeader() {
             </AvatarFallback>
           </Avatar>
         </div>
-        <div className="font-bold text-lg truncate">{initialProfile.name}</div>
+        <div className="font-bold text-sm sm:text-lg truncate">{initialProfile.name}</div>
       </div>
       <div className="flex items-center gap-2">
-        {/* Language Switcher */}
-        <div className="flex items-center justify-center w-9 h-9 rounded-full border bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
-          <LanguageSwitcher className="w-4" />
-        </div>
+        
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" suppressHydrationWarning>
@@ -86,11 +87,11 @@ export function PublicMobileHeader() {
           <SheetContent side="right" className="w-[300px] flex flex-col">
             <SheetHeader>
               <SheetTitle className="text-left">
-                {initialProfile.name}
+                {t("back")}
               </SheetTitle>
             </SheetHeader>
             <div className="flex flex-col flex-1 gap-8 py-8">
-              <nav className="flex flex-col space-y-2">
+              <nav className="flex flex-col space-y-2 border">
                 {navItems.map((item) => {
                   const isActive = pathname === item.href;
                   return (
@@ -99,7 +100,7 @@ export function PublicMobileHeader() {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "px-4 py-3 text-sm font-medium rounded-md transition-colors",
+                        "px-4 py-3 text-sm font-medium transition-colors",
                         isActive
                           ? "bg-muted text-foreground font-semibold"
                           : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -121,6 +122,17 @@ export function PublicMobileHeader() {
                       <IconMail size={20} />
                     </a>
                   </Button>
+                   {initialProfile.socials.whatsapp && (
+                    <Button variant="ghost" size="icon" asChild>
+                      <a
+                        href={initialProfile.socials.whatsapp}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <IconBrandWhatsapp size={20} />
+                      </a>
+                    </Button>
+                  )}
                   {initialProfile.socials.linkedin && (
                     <Button variant="ghost" size="icon" asChild>
                       <a
@@ -157,9 +169,13 @@ export function PublicMobileHeader() {
                 </div>
 
                 {/* Theme Toggler */}
-                <div className="flex justify-center mt-6">
+                <div className="flex justify-center mt-6 gap-2">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full border bg-background hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm">
                     <AnimatedThemeToggler className="w-4 cursor-pointer" />
+                  </div>
+                  {/* Language Switcher */}
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border bg-background hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm">
+                    <LanguageSwitcher className="w-4" />
                   </div>
                 </div>
               </div>
