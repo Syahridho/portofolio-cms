@@ -25,11 +25,38 @@ import { ProjectItem } from "@/lib/project-data";
 import { generateProjectSlug } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n-simple";
 import Link from "next/link";
+import { TechIcon } from "@/components/tech-icon";
+import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 4;
 
 interface ProjectsListProps {
   projects: ProjectItem[];
+}
+
+// Komponen kecil khusus buat handle blur-to-clear per gambar
+function ProjectImage({ src, alt }: { src: string; alt: string }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div className="relative w-full h-full overflow-hidden bg-muted">
+      {!isLoaded && (
+        <div className="absolute inset-0 animate-pulse bg-muted" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        onLoad={() => setIsLoaded(true)}
+        className={cn(
+          "w-full h-full object-cover transition-all duration-700 ease-out",
+          "hover:scale-105",
+          isLoaded
+            ? "opacity-100 blur-0 scale-100"
+            : "opacity-0 blur-md scale-105"
+        )}
+      />
+    </div>
+  );
 }
 
 export function ProjectsList({ projects }: ProjectsListProps) {
@@ -46,7 +73,6 @@ export function ProjectsList({ projects }: ProjectsListProps) {
     setCurrentPage(page);
   };
 
-  // Generate page numbers to display (simple version, show all pages)
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const showingText = t.projects.showing
@@ -64,24 +90,18 @@ export function ProjectsList({ projects }: ProjectsListProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {currentProjects.map((project) => {
+        {currentProjects.map((project: any) => {
           const slug = generateProjectSlug(project.title, project.id);
           return (
-            <Card
-              key={project.id}
-              className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow"
+            <Link
+              key={slug}
+              href={`/projects/${slug}`}
+              className="flex-1 flex flex-col"
             >
-              <Link
-                href={`/projects/${slug}`}
-                className="flex-1 flex flex-col cursor-pointer"
-              >
+              <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow rounded-sm cursor-pointer gap-2">
                 <div className="aspect-video w-full overflow-hidden bg-muted">
                   {project.image ? (
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
+                    <ProjectImage src={project.image} alt={project.title} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       {t.projects.noImage}
@@ -91,61 +111,16 @@ export function ProjectsList({ projects }: ProjectsListProps) {
                 <CardHeader className="pt-4">
                   <CardTitle>{project.title}</CardTitle>
                 </CardHeader>
-              </Link>
-              <CardFooter className="flex gap-2 pt-0">
-                {project.liveUrl && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    asChild
-                  >
-                    <a
-                      href={project.liveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={t.projects.demo}
-                      aria-label={t.projects.demo}
-                    >
-                      <IconWorld size={18} />
-                    </a>
-                  </Button>
-                )}
-                {project.githubUrl && (
-                  <Button
-                    variant="default"
-                    size="icon"
-                    asChild
-                  >
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={t.projects.code}
-                      aria-label={t.projects.code}
-                    >
-                      <IconBrandGithub size={18} />
-                    </a>
-                  </Button>
-                )}
-                {project.figmaUrl && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    asChild
-                  >
-                    <a
-                      href={project.figmaUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Figma"
-                      aria-label="Figma"
-                    >
-                      <IconBrandFigma size={18} />
-                    </a>
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
+
+                <CardFooter className="flex gap-2 pt-0">
+                  {project.technologies?.map((technology: any, id: number) => {
+                    return (
+                      <TechIcon key={id} name={technology} slug={technology} />
+                    );
+                  })}
+                </CardFooter>
+              </Card>
+            </Link>
           );
         })}
       </div>

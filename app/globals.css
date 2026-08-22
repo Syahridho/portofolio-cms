@@ -211,6 +211,7 @@
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   /* Custom scrollbar for dark mode with enhanced visibility */

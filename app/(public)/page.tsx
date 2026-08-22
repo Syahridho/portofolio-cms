@@ -8,7 +8,6 @@ import {
   IconBriefcase,
 } from "@tabler/icons-react";
 import { useLocale } from "@/lib/i18n-simple";
-import { TextHighlight } from "@/components/ui/text-highlight";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { DiaTextReveal } from "@/components/ui/dia-text-reveal"
-import { Marquee } from "@/components/ui/marquee";
 import { TechBadge } from "@/components/tech-badge";
 import { GithubContribution } from "@/components/github-contribution";
 import AchievementSection from "@/components/achievement-section";

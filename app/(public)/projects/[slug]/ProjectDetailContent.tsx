@@ -31,7 +31,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in zoom-in duration-500">
+    <div className="space-y-8 animate-in fade-in zoom-in duration-500 w-full min-w-0">
       <div>
         <Link
           href="/projects"
@@ -48,13 +48,13 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
         </div>
       </div>
 
-      <div className="grid gap-8">
+      <div className="grid gap-8 w-full min-w-0">
         {project.image && (
-          <div className="rounded-xl overflow-hidden border shadow-lg">
+          <div className="rounded-xl overflow-hidden border shadow-lg w-full">
             <img
               src={project.image}
               alt={project.title}
-              className="w-full h-auto object-cover max-h-[500px]"
+              className="w-full h-auto object-cover max-h-[500px] max-w-full"
             />
           </div>
         )}
@@ -81,9 +81,9 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
           </div>
         </div>
 
-        <div className="flex gap-4 pt-6 border-t">
+        <div className="flex flex-wrap gap-4 pt-6 border-t">
           {project.liveUrl && (
-            <Button asChild size="lg" className="flex-1">
+            <Button asChild size="lg" className="flex-1 min-w-[140px]">
               <a
                 href={project.liveUrl}
                 target="_blank"
@@ -95,7 +95,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
             </Button>
           )}
           {project.githubUrl && (
-            <Button asChild variant="outline" size="lg" className="flex-1">
+            <Button asChild variant="outline" size="lg" className="flex-1 min-w-[140px]">
               <a
                 href={project.githubUrl}
                 target="_blank"
@@ -107,7 +107,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
             </Button>
           )}
           {project.figmaUrl && (
-            <Button asChild variant="outline" size="lg" className="flex-1">
+            <Button asChild variant="outline" size="lg" className="flex-1 min-w-[140px]">
               <a
                 href={project.figmaUrl}
                 target="_blank"
