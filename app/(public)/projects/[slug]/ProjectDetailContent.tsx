@@ -6,6 +6,7 @@ import { IconBrandGithub, IconBrandFigma, IconWorld, IconArrowLeft } from "@tabl
 import { ProjectItem } from "@/lib/project-data";
 import { useLocale } from "@/lib/i18n-simple";
 import Link from "next/link";
+import { TechIcon } from "@/components/tech-icon";
 
 interface ProjectDetailContentProps {
   project: ProjectItem;
@@ -74,9 +75,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
           </h2>
           <div className="flex flex-wrap gap-3">
             {project.technologies.map((tech, i) => (
-              <Badge key={i} variant="secondary" className="text-sm">
-                {tech}
-              </Badge>
+              <TechIcon className="size-6 md:size-8" key={i} name={tech} slug={tech} />
             ))}
           </div>
         </div>

@@ -26,7 +26,7 @@ export function TechIcon({
         <img
           src={iconUrl}
           alt={name}
-          className="w-4 h-4"
+          className={cn("w-4 h-4", className)}
           loading="eager"
           onError={() => {
             setImageError(true);
